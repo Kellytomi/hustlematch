@@ -1,0 +1,146 @@
+name: hustlematch
+description: AI-powered job matching app with swipe interface for Nigerian professionals
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: '>=3.1.0 <4.0.0'
+  flutter: ">=3.13.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  # Core Dependencies
+  cupertino_icons: ^1.0.2
+
+  # State Management
+  flutter_riverpod: ^2.4.9
+  riverpod_annotation: ^2.3.3
+
+  # Navigation
+  go_router: ^12.1.3
+
+  # UI Components
+  flutter_animate: ^4.2.0
+  flutter_card_swiper: ^6.0.0
+  cached_network_image: ^3.3.0
+  flutter_svg: ^2.0.9
+  lottie: ^2.7.0
+
+  # HTTP & API
+  dio: ^5.3.2
+  retrofit: ^4.0.3
+  json_annotation: ^4.8.1
+
+  # Local Storage
+  hive_flutter: ^1.1.0
+  shared_preferences: ^2.2.2
+  flutter_secure_storage: ^9.0.0
+
+  # Authentication - temporarily disabled for MVP
+  # firebase_auth: ^4.15.3
+  # google_sign_in: ^6.1.6
+  # sign_in_with_apple: ^5.0.0
+
+  # File Handling
+  # image_picker: ^1.0.4
+  # file_picker: ^6.1.1
+  path_provider: ^2.1.1
+
+  # Platform Integration
+  url_launcher: ^6.2.1
+  package_info_plus: ^4.2.0
+  device_info_plus: ^9.1.1
+
+  # Permissions
+  permission_handler: ^11.1.0
+
+  # Networking
+  connectivity_plus: ^5.0.1
+
+  # Utils
+  intl: ^0.18.1
+  uuid: ^4.5.1
+  equatable: ^2.0.5
+
+  # LinkedIn Integration - temporarily disabled for MVP
+  # linkedin_login: ^3.1.3
+
+  # Push Notifications - temporarily disabled for MVP
+  # firebase_messaging: ^14.7.9
+  # flutter_local_notifications: ^16.3.0
+
+  # Analytics - temporarily disabled for MVP
+  # firebase_analytics: ^10.7.4
+  # firebase_crashlytics: ^3.4.8
+
+  # Performance - temporarily disabled for MVP
+  # firebase_performance: ^0.9.3+8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+  # Code Generation
+  build_runner: ^2.4.7
+  riverpod_generator: ^2.3.9
+  retrofit_generator: ^8.0.4
+  json_serializable: ^6.7.1
+  hive_generator: ^2.0.1
+
+  # Linting
+  flutter_lints: ^3.0.1
+  very_good_analysis: ^5.1.0
+
+  # Testing
+  mockito: ^5.4.2
+  network_image_mock: ^2.1.1
+
+  # Development Tools - temporarily disabled for MVP
+  # flutter_launcher_icons: ^0.13.1
+  # flutter_native_splash: ^2.3.5
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
+    - assets/icons/
+    - assets/animations/
+    - assets/logos/
+
+  # fonts:
+  #   - family: Inter
+  #     fonts:
+  #       - asset: assets/fonts/Inter-Regular.ttf
+  #       - asset: assets/fonts/Inter-Medium.ttf
+  #         weight: 500
+  #       - asset: assets/fonts/Inter-SemiBold.ttf
+  #         weight: 600
+  #       - asset: assets/fonts/Inter-Bold.ttf
+  #         weight: 700
+
+# Flutter Launcher Icons Configuration - temporarily disabled for MVP
+# flutter_icons:
+#   android: "launcher_icon"
+#   ios: true
+#   image_path: "assets/icons/app_icon.png"
+#   min_sdk_android: 21
+#   web:
+#     generate: true
+#     image_path: "assets/icons/app_icon.png"
+#     background_color: "#00C896"
+#     theme_color: "#00C896"
+
+# Native Splash Screen Configuration - temporarily disabled for MVP  
+# flutter_native_splash:
+#   color: "#00C896"
+#   image: assets/images/splash_logo.png
+#   color_dark: "#121212"
+#   image_dark: assets/images/splash_logo_dark.png
+#   android_12:
+#     image: assets/images/splash_logo_android12.png
+#     icon_background_color: "#00C896"
+#     image_dark: assets/images/splash_logo_android12_dark.png
+#     icon_background_color_dark: "#121212" 
