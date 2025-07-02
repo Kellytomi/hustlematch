@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 
-// Profile data model for MVP
+/// Profile data model for MVP
 class UserProfileData {
   final String firstName;
   final String lastName;
@@ -39,11 +40,12 @@ class UserProfileData {
   String get initials => '${firstName.isNotEmpty ? firstName[0] : ''}${lastName.isNotEmpty ? lastName[0] : ''}'.toUpperCase();
 }
 
-// State management
+/// State management for user profile data
 final profileProvider = StateNotifierProvider<ProfileNotifier, UserProfileData>((ref) {
   return ProfileNotifier();
 });
 
+/// Notifier for managing profile state
 class ProfileNotifier extends StateNotifier<UserProfileData> {
   ProfileNotifier() : super(const UserProfileData(
     firstName: 'John',
@@ -63,14 +65,12 @@ class ProfileNotifier extends StateNotifier<UserProfileData> {
       'UI/UX Design',
       'JavaScript',
       'React Native',
-      'Node.js',
-      'MongoDB',
     ],
     resumeFileName: 'John_Doe_Resume.pdf',
     hasUploadedResume: true,
     applicationsCount: 12,
     interviewsCount: 4,
-    profileCompletion: 85.0,
+    profileCompletion: 92.0,
     connectionsCount: 156,
   ));
 
@@ -93,68 +93,37 @@ class ProfileNotifier extends StateNotifier<UserProfileData> {
   }
 }
 
-class ProfileScreen extends ConsumerStatefulWidget {
+/// Profile screen widget with modern clean design
+class ProfileScreen extends ConsumerWidget {
   const ProfileScreen({super.key});
 
   @override
-  ConsumerState<ProfileScreen> createState() => _ProfileScreenState();
-}
-
-class _ProfileScreenState extends ConsumerState<ProfileScreen> with TickerProviderStateMixin {
-  bool _isUploading = false;
-  late AnimationController _headerAnimationController;
-  late Animation<double> _headerAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _headerAnimationController = AnimationController(
-      duration: const Duration(milliseconds: 1000),
-      vsync: this,
-    );
-    _headerAnimation = CurvedAnimation(
-      parent: _headerAnimationController,
-      curve: Curves.easeOutCubic,
-    );
-    _headerAnimationController.forward();
-  }
-
-  @override
-  void dispose() {
-    _headerAnimationController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final profile = ref.watch(profileProvider);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
           child: Column(
             children: [
-              // Enhanced Header with animations
-              _buildModernHeader(profile),
+              // Clean header matching applications page
+              _buildHeader(),
               
-              // Profile Completion Card with better design
-              _buildProfileCompletionCard(profile),
+              // Profile info card
+              _buildProfileCard(profile),
               
-              // Enhanced Quick Stats Grid
-              _buildQuickStatsGrid(profile),
+              // Quick stats cards
+              _buildStatsCards(profile),
               
-              // Modern Quick Actions
+              // Quick actions
               _buildQuickActions(),
               
-              // Enhanced Skills Section
-              _buildSkillsSection(profile),
+              // Skills section
+              _buildSkillsCard(profile),
               
-              // Modern Resume Section
-              _buildResumeSection(profile),
-              
-              // Professional Settings Section
-              _buildSettingsSection(),
+              // Settings and options
+              _buildSettingsCard(),
               
               const SizedBox(height: 100), // Bottom padding for nav bar
             ],
@@ -164,552 +133,333 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with TickerProvid
     );
   }
 
-  Widget _buildModernHeader(UserProfileData profile) {
-    return AnimatedBuilder(
-      animation: _headerAnimation,
-      builder: (context, child) {
-        return Transform.translate(
-          offset: Offset(0, (1 - _headerAnimation.value) * -50),
-          child: Opacity(
-            opacity: _headerAnimation.value,
-            child: Container(
-              width: double.infinity,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    AppTheme.primaryColor,
-                    AppTheme.primaryColor.withValues(alpha: 0.85),
-                    AppTheme.primaryColor.withValues(alpha: 0.7),
-                  ],
-                  stops: const [0.0, 0.6, 1.0],
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(24, 20, 24, 40),
-                child: Column(
-                  children: [
-                    // Top row with title and settings
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          'My Profile',
-                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                            color: Colors.white,
-                            fontWeight: FontWeight.bold,
-                            fontSize: 24,
-                          ),
-                        ),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(16),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: IconButton(
-                            onPressed: _showSettingsMenu,
-                            icon: const Icon(
-                              Icons.more_vert,
-                              color: Colors.white,
-                              size: 22,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                    
-                    const SizedBox(height: 40),
-                    
-                    // Profile Avatar and Info with improved design
-                    Column(
-                      children: [
-                        // Enhanced Avatar with edit button
-                        Stack(
-                          children: [
-                            Container(
-                              width: 120,
-                              height: 120,
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                  colors: [
-                                    Colors.white.withValues(alpha: 0.3),
-                                    Colors.white.withValues(alpha: 0.1),
-                                  ],
-                                ),
-                                borderRadius: BorderRadius.circular(30),
-                                border: Border.all(
-                                  color: Colors.white.withValues(alpha: 0.4), 
-                                  width: 4
-                                ),
-                                boxShadow: [
-                                  BoxShadow(
-                                    color: Colors.black.withValues(alpha: 0.2),
-                                    blurRadius: 20,
-                                    offset: const Offset(0, 8),
-                                  ),
-                                ],
-                              ),
-                              child: Center(
-                                child: Text(
-                                  profile.initials,
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 40,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 2,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            Positioned(
-                              bottom: 8,
-                              right: 8,
-                              child: Container(
-                                width: 36,
-                                height: 36,
-                                decoration: BoxDecoration(
-                                  gradient: LinearGradient(
-                                    colors: [Colors.white, Colors.grey.shade100],
-                                  ),
-                                  borderRadius: BorderRadius.circular(18),
-                                  border: Border.all(
-                                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                                    width: 2,
-                                  ),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.black.withValues(alpha: 0.15),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Icon(
-                                  Icons.edit,
-                                  size: 18,
-                                  color: AppTheme.primaryColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        
-                        const SizedBox(height: 24),
-                        
-                        // Enhanced Name and Title
-                        Text(
-                          profile.fullName,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                          decoration: BoxDecoration(
-                            color: Colors.white.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: Colors.white.withValues(alpha: 0.3),
-                              width: 1,
-                            ),
-                          ),
-                          child: Text(
-                            profile.jobTitle,
-                            style: TextStyle(
-                              color: Colors.white.withValues(alpha: 0.95),
-                              fontSize: 16,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(
-                              Icons.location_on_outlined,
-                              size: 18,
-                              color: Colors.white.withValues(alpha: 0.9),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              profile.location,
-                              style: TextStyle(
-                                color: Colors.white.withValues(alpha: 0.9),
-                                fontSize: 14,
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildProfileCompletionCard(UserProfileData profile) {
+  /// Builds the header section matching the applications page style
+  Widget _buildHeader() {
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  Icons.person_outline,
-                  color: AppTheme.primaryColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Profile Completion',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      'Complete your profile to get better matches',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                    width: 1,
-                  ),
-                ),
-                child: Text(
-                  '${profile.profileCompletion.toInt()}%',
-                  style: TextStyle(
-                    fontWeight: FontWeight.bold,
-                    color: AppTheme.primaryColor,
-                    fontSize: 16,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Container(
-              height: 12,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade200,
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: Stack(
-                children: [
-                  Container(
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.8)],
-                      ),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    width: MediaQuery.of(context).size.width * (profile.profileCompletion / 100) * 0.85,
-                  ),
-                ],
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildQuickStatsGrid(UserProfileData profile) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
         children: [
           Expanded(
-            child: _buildStatCard(
-              'Applications',
-              profile.applicationsCount.toString(),
-              Icons.work_outline,
-              AppTheme.primaryColor,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'My Profile',
+                  style: AppTheme.heading1.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Manage your career profile',
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
             ),
           ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'Interviews',
-              profile.interviewsCount.toString(),
-              Icons.people_outline,
-              Colors.orange,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: _buildStatCard(
-              'Connections',
-              profile.connectionsCount.toString(),
-              Icons.group_outlined,
-              Colors.blue,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
-    return Container(
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
           Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  color.withValues(alpha: 0.2),
-                  color.withValues(alpha: 0.1),
-                ],
-              ),
+              color: Colors.white,
               borderRadius: BorderRadius.circular(16),
+              boxShadow: AppTheme.cardShadow,
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
+            child: Icon(
+              Icons.edit_outlined,
+              color: AppTheme.primaryColor,
+              size: 24,
             ),
           ),
         ],
       ),
+    ).animate().slideY(begin: -0.3, duration: 500.ms, curve: Curves.easeOut);
+  }
+
+  /// Builds the main profile information card
+  Widget _buildProfileCard(UserProfileData profile) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppTheme.cardShadow,
+      ),
+      child: Column(
+        children: [
+          // Profile avatar
+          Container(
+            width: 100,
+            height: 100,
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  AppTheme.primaryColor,
+                  AppTheme.primaryColor.withOpacity(0.8),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(25),
+              boxShadow: [
+                BoxShadow(
+                  color: AppTheme.primaryColor.withOpacity(0.3),
+                  blurRadius: 12,
+                  offset: const Offset(0, 4),
+                ),
+              ],
+            ),
+            child: Center(
+              child: Text(
+                profile.initials,
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1,
+                ),
+              ),
+            ),
+          ),
+          
+          const SizedBox(height: 20),
+          
+          // Name and title
+          Text(
+            profile.fullName,
+            style: AppTheme.heading2.copyWith(
+              color: AppTheme.textPrimary,
+              fontSize: 24,
+            ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            profile.jobTitle,
+            style: AppTheme.bodyLarge.copyWith(
+              color: AppTheme.primaryColor,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Contact info
+          _buildContactInfo(profile),
+          
+          const SizedBox(height: 20),
+          
+          // Profile completion
+          _buildProfileCompletion(profile.profileCompletion),
+        ],
+      ),
+    ).animate().scale(begin: const Offset(0.95, 0.95), duration: 400.ms, curve: Curves.easeOut);
+  }
+
+  /// Builds contact information section
+  Widget _buildContactInfo(UserProfileData profile) {
+    return Column(
+      children: [
+        _buildContactItem(Icons.email_outlined, profile.email),
+        const SizedBox(height: 12),
+        _buildContactItem(Icons.phone_outlined, profile.phone),
+        const SizedBox(height: 12),
+        _buildContactItem(Icons.location_on_outlined, profile.location),
+      ],
     );
   }
 
+  /// Builds individual contact item
+  Widget _buildContactItem(IconData icon, String text) {
+    return Row(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: AppTheme.primaryColor.withOpacity(0.1),
+            borderRadius: BorderRadius.circular(10),
+          ),
+          child: Icon(
+            icon,
+            color: AppTheme.primaryColor,
+            size: 16,
+          ),
+        ),
+        const SizedBox(width: 12),
+        Expanded(
+          child: Text(
+            text,
+            style: AppTheme.bodyMedium.copyWith(
+              color: AppTheme.textSecondary,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds profile completion indicator
+  Widget _buildProfileCompletion(double completion) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Text(
+              'Profile Completion',
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.textPrimary,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            Text(
+              '${completion.toInt()}%',
+              style: AppTheme.bodyMedium.copyWith(
+                color: AppTheme.primaryColor,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Container(
+          height: 8,
+          decoration: BoxDecoration(
+            color: Colors.grey.shade200,
+            borderRadius: BorderRadius.circular(4),
+          ),
+          child: FractionallySizedBox(
+            alignment: Alignment.centerLeft,
+            widthFactor: completion / 100,
+            child: Container(
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    AppTheme.primaryColor,
+                    AppTheme.primaryColor.withOpacity(0.8),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(4),
+              ),
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  /// Builds stats cards section
+  Widget _buildStatsCards(UserProfileData profile) {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        children: [
+          _buildStatCard('Applications', profile.applicationsCount.toString(), Icons.work_outline, AppTheme.primaryColor),
+          const SizedBox(width: 12),
+          _buildStatCard('Interviews', profile.interviewsCount.toString(), Icons.people_outline, AppTheme.warningColor),
+          const SizedBox(width: 12),
+          _buildStatCard('Connections', profile.connectionsCount.toString(), Icons.group_outlined, AppTheme.successColor),
+        ],
+      ),
+    ).animate().scale(begin: const Offset(0.9, 0.9), duration: 600.ms, curve: Curves.easeOut);
+  }
+
+  /// Builds individual stat card
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds quick actions section
   Widget _buildQuickActions() {
     return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  Icons.flash_on_outlined,
-                  color: AppTheme.primaryColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Text(
-                'Quick Actions',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
-                  color: AppTheme.textPrimary,
-                ),
-              ),
-            ],
+          Text(
+            'Quick Actions',
+            style: AppTheme.heading3.copyWith(
+              color: AppTheme.textPrimary,
+              fontSize: 18,
+            ),
           ),
-          const SizedBox(height: 20),
+          const SizedBox(height: 16),
           Row(
             children: [
-              Expanded(
-                child: _buildActionButton(
-                  'Job Alerts',
-                  Icons.notifications_outlined,
-                  Colors.blue,
-                  _showJobAlertsDialog,
-                ),
+              _buildActionButton(
+                'Update Resume',
+                Icons.upload_file_outlined,
+                AppTheme.primaryColor,
               ),
               const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'Share Profile',
-                  Icons.share_outlined,
-                  Colors.green,
-                  _shareProfile,
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 12),
-          Row(
-            children: [
-              Expanded(
-                child: _buildActionButton(
-                  'Analytics',
-                  Icons.analytics_outlined,
-                  Colors.orange,
-                  _showAnalytics,
-                ),
-              ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: _buildActionButton(
-                  'Edit Profile',
-                  Icons.edit_outlined,
-                  AppTheme.primaryColor,
-                  _showEditProfileDialog,
-                ),
+              _buildActionButton(
+                'View Applications',
+                Icons.list_alt_outlined,
+                AppTheme.successColor,
               ),
             ],
           ),
         ],
       ),
-    );
+    ).animate().slideX(begin: -0.2, duration: 700.ms, curve: Curves.easeOut);
   }
 
-  Widget _buildActionButton(String label, IconData icon, Color color, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
+  /// Builds individual action button
+  Widget _buildActionButton(String label, IconData icon, Color color) {
+    return Expanded(
       child: Container(
-        padding: const EdgeInsets.all(16),
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
         decoration: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [
-              color.withValues(alpha: 0.1),
-              color.withValues(alpha: 0.05),
-            ],
-          ),
-          borderRadius: BorderRadius.circular(16),
+          color: color.withOpacity(0.1),
+          borderRadius: BorderRadius.circular(12),
           border: Border.all(
-            color: color.withValues(alpha: 0.3),
+            color: color.withOpacity(0.3),
             width: 1,
           ),
         ),
@@ -732,632 +482,152 @@ class _ProfileScreenState extends ConsumerState<ProfileScreen> with TickerProvid
     );
   }
 
-  Widget _buildSkillsSection(UserProfileData profile) {
+  /// Builds skills card section
+  Widget _buildSkillsCard(UserProfileData profile) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: AppTheme.cardShadow,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  Icons.star_outline,
-                  color: AppTheme.primaryColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Skills & Expertise',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      '${profile.skills.length} skills added',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              IconButton(
-                onPressed: () {},
-                icon: Icon(
-                  Icons.add,
-                  color: AppTheme.primaryColor,
-                ),
-                style: IconButton.styleFrom(
-                  backgroundColor: AppTheme.primaryColor.withValues(alpha: 0.1),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          Wrap(
-            spacing: 10,
-            runSpacing: 10,
-            children: profile.skills.map((skill) => Container(
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    AppTheme.primaryColor.withValues(alpha: 0.15),
-                    AppTheme.primaryColor.withValues(alpha: 0.08),
-                  ],
-                ),
-                borderRadius: BorderRadius.circular(20),
-                border: Border.all(
-                  color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                  width: 1,
-                ),
-              ),
-              child: Text(
-                skill,
-                style: TextStyle(
-                  color: AppTheme.primaryColor,
-                  fontWeight: FontWeight.w600,
-                  fontSize: 13,
-                ),
-              ),
-            )).toList(),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildResumeSection(UserProfileData profile) {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  Icons.description_outlined,
-                  color: AppTheme.primaryColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Resume',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      profile.hasUploadedResume ? 'Resume uploaded' : 'No resume uploaded',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 20),
-          if (profile.hasUploadedResume) ...[
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    padding: const EdgeInsets.all(8),
-                    decoration: BoxDecoration(
-                      color: Colors.red.shade100,
-                      borderRadius: BorderRadius.circular(8),
-                    ),
-                    child: Icon(Icons.picture_as_pdf, color: Colors.red.shade600, size: 20),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          profile.resumeFileName ?? 'Resume.pdf',
-                          style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                        Text(
-                          'Last updated 2 days ago',
-                          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                            color: AppTheme.textSecondary,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  IconButton(
-                    onPressed: _downloadResume,
-                    icon: Icon(Icons.download_outlined, color: AppTheme.primaryColor),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 16),
-          ],
-          Row(
-            children: [
-              Expanded(
-                child: ElevatedButton.icon(
-                  onPressed: _isUploading ? null : _showResumeUploadDialog,
-                  icon: _isUploading 
-                    ? SizedBox(
-                        width: 16,
-                        height: 16,
-                        child: CircularProgressIndicator(
-                          strokeWidth: 2,
-                          valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
-                        ),
-                      )
-                    : Icon(Icons.upload_file_outlined),
-                  label: Text(_isUploading ? 'Uploading...' : 'Upload Resume'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(vertical: 14),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    elevation: 2,
-                    shadowColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSettingsSection() {
-    final settingsItems = [
-      {'icon': Icons.edit_outlined, 'title': 'Edit Profile', 'subtitle': 'Update your information', 'onTap': _showEditProfileDialog},
-      {'icon': Icons.security_outlined, 'title': 'Privacy & Security', 'subtitle': 'Manage your account security', 'onTap': () {}},
-      {'icon': Icons.notifications_outlined, 'title': 'Notifications', 'subtitle': 'Customize your alerts', 'onTap': () {}},
-      {'icon': Icons.help_outline, 'title': 'Help & Support', 'subtitle': 'Get help and contact us', 'onTap': () {}},
-      {'icon': Icons.logout, 'title': 'Sign Out', 'subtitle': 'Sign out from your account', 'onTap': () => context.go('/welcome')},
-    ];
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 6),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(14),
-                ),
-                child: Icon(
-                  Icons.settings_outlined,
-                  color: AppTheme.primaryColor,
-                  size: 22,
-                ),
-              ),
-              const SizedBox(width: 16),
               Text(
-                'Settings & More',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                  fontWeight: FontWeight.bold,
+                'Skills',
+                style: AppTheme.heading3.copyWith(
                   color: AppTheme.textPrimary,
+                  fontSize: 18,
+                ),
+              ),
+              Text(
+                '${profile.skills.length} skills',
+                style: AppTheme.bodySmall.copyWith(
+                  color: AppTheme.textSecondary,
                 ),
               ),
             ],
           ),
-          const SizedBox(height: 20),
-          ...settingsItems.map((item) => _buildSettingsItem(
-            item['icon'] as IconData,
-            item['title'] as String,
-            item['subtitle'] as String,
-            item['onTap'] as VoidCallback,
-          )).toList(),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: profile.skills.map((skill) {
+              return Container(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                decoration: BoxDecoration(
+                  gradient: LinearGradient(
+                    colors: [
+                      AppTheme.primaryColor.withOpacity(0.1),
+                      AppTheme.primaryColor.withOpacity(0.05),
+                    ],
+                  ),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    width: 1,
+                  ),
+                ),
+                child: Text(
+                  skill,
+                  style: TextStyle(
+                    color: AppTheme.primaryColor,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              );
+            }).toList(),
+          ),
         ],
       ),
-    );
+    ).animate().slideY(begin: 0.2, duration: 800.ms, curve: Curves.easeOut);
   }
 
-  Widget _buildSettingsItem(IconData icon, String title, String subtitle, VoidCallback onTap) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        margin: const EdgeInsets.only(bottom: 12),
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.grey.shade50,
-          borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: Colors.grey.shade200),
-        ),
-        child: Row(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(8),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Icon(icon, color: AppTheme.primaryColor, size: 20),
+  /// Builds settings card section
+  Widget _buildSettingsCard() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: AppTheme.cardShadow,
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text(
+            'Settings',
+            style: AppTheme.heading3.copyWith(
+              color: AppTheme.textPrimary,
+              fontSize: 18,
             ),
-            const SizedBox(width: 16),
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Text(
-                    title,
-                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                      fontWeight: FontWeight.w600,
-                      color: AppTheme.textPrimary,
-                    ),
-                  ),
-                  Text(
-                    subtitle,
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textSecondary,
-                    ),
-                  ),
-                ],
-              ),
+          ),
+          const SizedBox(height: 16),
+          _buildSettingsItem(Icons.notifications_outlined, 'Notifications', 'Manage your alerts'),
+          _buildSettingsItem(Icons.security_outlined, 'Privacy & Security', 'Control your data'),
+          _buildSettingsItem(Icons.help_outline, 'Help & Support', 'Get assistance'),
+          _buildSettingsItem(Icons.logout_outlined, 'Sign Out', 'Log out of your account', isDestructive: true),
+        ],
+      ),
+    ).animate().slideY(begin: 0.3, duration: 900.ms, curve: Curves.easeOut);
+  }
+
+  /// Builds individual settings item
+  Widget _buildSettingsItem(IconData icon, String title, String subtitle, {bool isDestructive = false}) {
+    final color = isDestructive ? AppTheme.errorColor : AppTheme.textPrimary;
+    final iconColor = isDestructive ? AppTheme.errorColor : AppTheme.primaryColor;
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              color: iconColor.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(10),
             ),
-            Icon(
-              Icons.chevron_right,
-              color: AppTheme.textSecondary,
+            child: Icon(
+              icon,
+              color: iconColor,
               size: 20,
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showSettingsMenu() {
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      builder: (context) => Container(
-        decoration: const BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
-        ),
-        padding: const EdgeInsets.all(24),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            Container(
-              width: 40,
-              height: 4,
-              decoration: BoxDecoration(
-                color: Colors.grey.shade300,
-                borderRadius: BorderRadius.circular(2),
-              ),
-            ),
-            const SizedBox(height: 24),
-            _buildBottomSheetItem(
-              Icons.edit_outlined,
-              'Edit Profile',
-              () {
-                Navigator.pop(context);
-                _showEditProfileDialog();
-              },
-            ),
-            _buildBottomSheetItem(
-              Icons.settings_outlined,
-              'Settings',
-              () => Navigator.pop(context),
-            ),
-            _buildBottomSheetItem(
-              Icons.logout,
-              'Sign Out',
-              () {
-                Navigator.pop(context);
-                context.go('/welcome');
-              },
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBottomSheetItem(IconData icon, String title, VoidCallback onTap) {
-    return ListTile(
-      leading: Container(
-        padding: const EdgeInsets.all(8),
-        decoration: BoxDecoration(
-          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Icon(icon, color: AppTheme.primaryColor),
-      ),
-      title: Text(
-        title,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          color: AppTheme.textPrimary,
-        ),
-      ),
-      onTap: onTap,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-    );
-  }
-
-  void _showResumeUploadDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Upload Resume'),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('Choose how you\'d like to upload your resume:'),
-            const SizedBox(height: 24),
-            Row(
+          ),
+          const SizedBox(width: 16),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Expanded(
-                  child: ElevatedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                      _simulateResumeUpload();
-                    },
-                    icon: const Icon(Icons.upload_file),
-                    label: const Text('Upload File'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                Text(
+                  title,
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: color,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: OutlinedButton.icon(
-                    onPressed: () {
-                      Navigator.pop(context);
-                    },
-                    icon: const Icon(Icons.camera_alt),
-                    label: const Text('Take Photo'),
-                    style: OutlinedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(vertical: 12),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                const SizedBox(height: 2),
+                Text(
+                  subtitle,
+                  style: AppTheme.bodySmall.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
                 ),
               ],
             ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  void _showEditProfileDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Edit Profile'),
-        content: const Text('Profile editing functionality will be available soon.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
+          ),
+          Icon(
+            Icons.arrow_forward_ios,
+            color: AppTheme.textMuted,
+            size: 16,
           ),
         ],
-      ),
-    );
-  }
-
-  void _showJobAlertsDialog() {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-        title: const Text('Job Alerts'),
-        content: const Text('Job alerts functionality will be available soon.'),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('OK'),
-          ),
-        ],
-      ),
-    );
-  }
-
-  void _shareProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.share, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Profile sharing coming soon!'),
-          ],
-        ),
-        backgroundColor: Colors.blue,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-    );
-  }
-
-  void _showAnalytics() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.analytics, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Analytics feature coming soon!'),
-          ],
-        ),
-        backgroundColor: Colors.green,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-    );
-  }
-
-  void _downloadResume() {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.download, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Resume downloaded successfully!'),
-          ],
-        ),
-        backgroundColor: AppTheme.successColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-      ),
-    );
-  }
-
-  void _simulateResumeUpload() async {
-    setState(() {
-      _isUploading = true;
-    });
-
-    // Simulate upload delay
-    await Future.delayed(const Duration(seconds: 2));
-
-    if (!mounted) return;
-
-    setState(() {
-      _isUploading = false;
-    });
-
-    // Update profile with new resume
-    ref.read(profileProvider.notifier).updateResume('Updated_Resume.pdf');
-
-    if (!mounted) return;
-
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Row(
-          children: [
-            Icon(Icons.check_circle, color: Colors.white),
-            SizedBox(width: 8),
-            Text('Resume updated successfully!'),
-          ],
-        ),
-        backgroundColor: AppTheme.successColor,
-        behavior: SnackBarBehavior.floating,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       ),
     );
   }

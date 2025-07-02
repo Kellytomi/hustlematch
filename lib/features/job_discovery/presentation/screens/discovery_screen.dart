@@ -554,29 +554,34 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                                   ),
                                 ),
                               
-                              // Right stamp (APPLY)
+                              // Right stamp (APPLY) - Bold and prominent
                               if (_dragOffset > 0)
                                 Positioned(
-                                  right: 60,
-                                  top: 150,
+                                  right: 50,
+                                  top: 140,
                                   child: Transform.rotate(
                                     angle: 0.2,
                                     child: Opacity(
-                                      opacity: (_dragOffset.abs() / 120).clamp(0.4, 0.95),
+                                      opacity: (_dragOffset.abs() / 100).clamp(0.6, 1.0),
                                       child: Container(
-                                        width: 100,
-                                        height: 100,
+                                        width: 120,
+                                        height: 120,
                                         decoration: BoxDecoration(
-                                          color: Colors.white.withValues(alpha: 0.9),
+                                          color: Colors.white,
                                           shape: BoxShape.circle,
                                           border: Border.all(
                                             color: AppTheme.successColor,
-                                            width: 4,
+                                            width: 6,
                                           ),
                                           boxShadow: [
                                             BoxShadow(
-                                              color: Colors.black.withValues(alpha: 0.3),
-                                              blurRadius: 8,
+                                              color: AppTheme.successColor.withValues(alpha: 0.4),
+                                              blurRadius: 16,
+                                              offset: const Offset(0, 6),
+                                            ),
+                                            BoxShadow(
+                                              color: Colors.black.withValues(alpha: 0.2),
+                                              blurRadius: 12,
                                               offset: const Offset(0, 4),
                                             ),
                                           ],
@@ -588,16 +593,16 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                                               Icon(
                                                 Icons.favorite,
                                                 color: AppTheme.successColor,
-                                                size: 28,
+                                                size: 36,
                                               ),
-                                              const SizedBox(height: 2),
+                                              const SizedBox(height: 4),
                                               Text(
                                                 'APPLY',
                                                 style: TextStyle(
                                                   color: AppTheme.successColor,
-                                                  fontSize: 14,
-                                                  fontWeight: FontWeight.bold,
-                                                  letterSpacing: 1,
+                                                  fontSize: 18,
+                                                  fontWeight: FontWeight.w900,
+                                                  letterSpacing: 2,
                                                 ),
                                               ),
                                             ],
