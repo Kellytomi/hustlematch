@@ -27,6 +27,12 @@ dependencies:
   cached_network_image: ^3.3.0
   flutter_svg: ^2.0.9
   lottie: ^2.7.0
+  
+  # Glass Effects - Using alternative approach due to compatibility issues
+  # liquido:
+  #   git:
+  #     url: https://github.com/renancaraujo/liquido.git
+  #     ref: main
 
   # HTTP & API
   dio: ^5.3.2

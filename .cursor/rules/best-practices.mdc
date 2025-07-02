@@ -1,0 +1,145 @@
+---
+description: 
+globs: 
+alwaysApply: true
+---
+Description: Best Practices for Flutter Mobile Development
+1. Write the code as if the guy who ends up maintaining your code will be a violent psychopath who knows where you live. Prioritise readability over cleverness — use descriptive variable and function names.
+
+2. Follow Dart naming conventions religiously
+
+Use camelCase for variables, functions, and parameters
+Use PascalCase for classes, enums, and typedefs
+Use snake_case for file names and directory names
+Use SCREAMING_SNAKE_CASE for constants
+
+3. Keep widget build methods under 50 lines
+
+Extract complex UI logic into separate methods or widgets
+Use composition over inheritance for widget structures
+Create reusable custom widgets for repeated UI patterns
+
+4. Always handle null safety explicitly
+
+Use null-aware operators (?., ??, ??=) appropriately
+Avoid using ! operator unless absolutely certain
+Initialize nullable variables with meaningful defaults where possible
+
+5. Implement proper error handling and loading states
+
+Always show loading indicators during async operations
+Handle network failures gracefully with user-friendly messages
+Use try-catch blocks for all async operations
+Implement retry mechanisms for failed network requests
+
+6. Follow the single responsibility principle
+
+Each widget should have one clear purpose
+Keep business logic separate from UI code
+Use services/repositories for data operations
+Implement proper separation of concerns
+
+7. Use meaningful file and folder structure
+lib/
+├── core/
+│   ├── constants/
+│   ├── theme/
+│   └── utils/
+├── data/
+│   ├── models/
+│   ├── repositories/
+│   └── services/
+├── presentation/
+│   ├── pages/
+│   ├── widgets/
+│   └── providers/
+└── main.dart
+8. Always dispose resources properly
+
+Dispose controllers, streams, and subscriptions in dispose() method
+Use AutomaticKeepAliveClientMixin when needed
+Close database connections and file handles
+Cancel timers and animations
+
+9. Write comprehensive documentation
+
+Document all public APIs with dartdoc comments
+Include usage examples for complex widgets
+Document widget parameters and their purposes
+Add TODO comments for future improvements
+
+10. Implement consistent state management
+
+Choose one state management solution and stick to it
+Use Provider, Riverpod, or BLoC consistently throughout the app
+Avoid mixing different state management approaches
+Keep state immutable where possible
+
+11. Optimize for performance
+
+Use const constructors wherever possible
+Implement ListView.builder for long lists
+Use RepaintBoundary for expensive widgets
+Avoid rebuilding widgets unnecessarily
+
+12. Handle different screen sizes and orientations
+
+Use MediaQuery and LayoutBuilder for responsive design
+Test on different screen sizes and orientations
+Implement proper overflow handling
+Use flexible layouts with Expanded and Flexible
+
+13. Implement proper logging and debugging
+Use debugPrint instead of print for debug output
+Implement different log levels (debug, info, warning, error)
+Add meaningful log messages with context
+Use Flutter Inspector and Dart DevTools
+
+14. Write testable code
+
+Keep business logic separate from UI
+Use dependency injection for external dependencies
+Write unit tests for business logic
+Write widget tests for UI components
+
+15. Follow platform-specific guidelines
+
+Respect Material Design principles for Android
+Follow Human Interface Guidelines for iOS
+Use platform-specific widgets when appropriate
+Handle platform differences gracefully
+
+16. Secure sensitive data
+
+Never hardcode API keys or secrets
+Use secure storage for sensitive information
+Implement proper authentication and authorization
+Validate all user inputs
+
+17. Optimize app startup time
+
+Minimize work in main() function
+Use lazy loading for heavy resources
+Implement splash screens appropriately
+Defer non-critical initializations
+
+18. Use proper version control practices
+
+Write meaningful commit messages
+Keep commits small and focused
+Use branching strategies appropriately
+Add .gitignore for Flutter projects
+
+19. Implement accessibility features
+
+Add semantic labels to widgets
+Ensure proper color contrast
+Support screen readers
+Test with accessibility tools
+
+20. Keep dependencies minimal and updated
+
+Regularly update packages to latest stable versions
+Remove unused dependencies
+Use flutter pub deps to analyze dependency tree
+Pin critical dependencies to specific versions

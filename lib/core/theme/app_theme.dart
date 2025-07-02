@@ -3,7 +3,7 @@ import 'package:flutter/services.dart';
 
 class AppTheme {
   // Colors
-  static const Color primaryColor = Color(0xFF00C896);
+  static const Color primaryColor = Color(0xFF007AFF);
   static const Color primaryVariant = Color(0xFF00B887);
   static const Color secondaryColor = Color(0xFF6C63FF);
   static const Color accentColor = Color(0xFFFF6B6B);

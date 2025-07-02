@@ -1,30 +1,68 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:go_router/go_router.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../data/models/job.dart';
 
-// Application status enum
+/// Represents the status of a job application.
+/// 
+/// Used to track the progress of applications through the hiring process.
 enum ApplicationStatus {
+  /// Application has been submitted and is pending review
   applied,
+  
+  /// Application is currently being reviewed by the employer
   reviewing,
+  
+  /// Candidate has been invited for an interview
   interview,
+  
+  /// Job offer has been extended to the candidate
   offered,
+  
+  /// Application has been rejected
   rejected,
 }
 
-// Simple application model for MVP
+/// Represents a job application with tracking information.
+/// 
+/// This model extends basic job information with application-specific
+/// data such as status, dates, and progress tracking.
 class JobApplication {
+  /// Unique identifier for the application
   final String id;
+  
+  /// Title of the applied position
   final String jobTitle;
+  
+  /// Name of the hiring company
   final String company;
+  
+  /// Company logo or emoji representation
   final String companyLogo;
+  
+  /// Current status of the application
   final ApplicationStatus status;
+  
+  /// Date when the application was submitted
   final DateTime appliedDate;
+  
+  /// Job location
   final String location;
+  
+  /// Salary range for the position
   final String salary;
+  
+  /// Percentage match with user profile
   final double matchPercentage;
+  
+  /// Required skills for the position
   final List<String> skills;
+  
+  /// Color associated with the application status
+  final Color statusColor;
 
+  /// Creates a new [JobApplication] instance.
   const JobApplication({
     required this.id,
     required this.jobTitle,
@@ -36,21 +74,57 @@ class JobApplication {
     required this.salary,
     required this.matchPercentage,
     required this.skills,
+    required this.statusColor,
   });
+
+  /// Returns a user-friendly status message.
+  String get statusMessage {
+    switch (status) {
+      case ApplicationStatus.applied:
+        return 'Application Submitted';
+      case ApplicationStatus.reviewing:
+        return 'Under Review';
+      case ApplicationStatus.interview:
+        return 'Interview Scheduled';
+      case ApplicationStatus.offered:
+        return 'Offer Received';
+      case ApplicationStatus.rejected:
+        return 'Application Rejected';
+    }
+  }
+
+  /// Returns the number of days since application was submitted.
+  int get daysSinceApplied {
+    return DateTime.now().difference(appliedDate).inDays;
+  }
+
+  /// Returns a formatted time string for when the application was submitted.
+  String get appliedTimeAgo {
+    final days = daysSinceApplied;
+    if (days == 0) return 'Today';
+    if (days == 1) return '1 day ago';
+    return '$days days ago';
+  }
 }
 
-// State management
+/// State management for application tracking.
+/// 
+/// Manages the list of job applications and provides methods for
+/// filtering and sorting applications.
 final applicationTrackerProvider = StateNotifierProvider<ApplicationTrackerNotifier, List<JobApplication>>((ref) {
   return ApplicationTrackerNotifier();
 });
 
+/// Notifier for managing application tracking state.
 class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
   ApplicationTrackerNotifier() : super([]) {
     _loadApplications();
   }
 
+  /// Loads mock application data.
+  /// 
+  /// In a real app, this would fetch data from an API or local database.
   void _loadApplications() {
-    // Mock application data for MVP
     final mockApplications = [
       JobApplication(
         id: '1',
@@ -63,6 +137,7 @@ class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
         salary: '₦2.5M - ₦4M /year',
         matchPercentage: 92.0,
         skills: ['Flutter', 'Dart', 'Firebase'],
+        statusColor: AppTheme.warningColor,
       ),
       JobApplication(
         id: '2',
@@ -75,6 +150,7 @@ class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
         salary: '₦3M - ₦5M /year',
         matchPercentage: 88.0,
         skills: ['Product Strategy', 'Analytics'],
+        statusColor: AppTheme.secondaryColor,
       ),
       JobApplication(
         id: '3',
@@ -87,6 +163,7 @@ class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
         salary: '₦2.8M - ₦4.5M /year',
         matchPercentage: 85.0,
         skills: ['Node.js', 'MongoDB', 'AWS'],
+        statusColor: AppTheme.successColor,
       ),
       JobApplication(
         id: '4',
@@ -99,6 +176,7 @@ class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
         salary: '₦1.8M - ₦3.2M /year',
         matchPercentage: 90.0,
         skills: ['Figma', 'Design Systems'],
+        statusColor: AppTheme.textSecondary,
       ),
       JobApplication(
         id: '5',
@@ -111,6 +189,7 @@ class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
         salary: '₦2.2M - ₦3.8M /year',
         matchPercentage: 75.0,
         skills: ['SEO', 'Google Ads', 'Analytics'],
+        statusColor: AppTheme.errorColor,
       ),
       JobApplication(
         id: '6',
@@ -123,13 +202,27 @@ class ApplicationTrackerNotifier extends StateNotifier<List<JobApplication>> {
         salary: '₦3.5M - ₦5.5M /year',
         matchPercentage: 87.0,
         skills: ['Python', 'Machine Learning', 'SQL'],
+        statusColor: AppTheme.warningColor,
       ),
     ];
 
     state = mockApplications;
   }
+
+  /// Refreshes the applications list.
+  /// 
+  /// In a real app, this would make an API call to fetch updated data.
+  Future<void> refreshApplications() async {
+    // Simulate API call delay
+    await Future.delayed(const Duration(seconds: 1));
+    _loadApplications();
+  }
 }
 
+/// Modern, clean tracker screen matching the app's design system.
+/// 
+/// This screen provides a comprehensive view of job applications with
+/// filtering, search, and detailed statistics using the app's teal theme.
 class TrackerScreen extends ConsumerStatefulWidget {
   const TrackerScreen({super.key});
 
@@ -138,19 +231,35 @@ class TrackerScreen extends ConsumerStatefulWidget {
 }
 
 class _TrackerScreenState extends ConsumerState<TrackerScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   late TabController _tabController;
+  late AnimationController _animationController;
+  late Animation<double> _fadeAnimation;
+  
+  final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  bool _isSearching = false;
 
   @override
   void initState() {
     super.initState();
     _tabController = TabController(length: 3, vsync: this);
+    _animationController = AnimationController(
+      duration: const Duration(milliseconds: 600),
+      vsync: this,
+    );
+    _fadeAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
+      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
+    );
+    
+    _animationController.forward();
   }
 
   @override
   void dispose() {
     _tabController.dispose();
+    _animationController.dispose();
+    _searchController.dispose();
     super.dispose();
   }
 
@@ -160,62 +269,36 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
     final filteredApplications = _filterApplications(applications);
     
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: AppTheme.backgroundColor,
       body: SafeArea(
-        child: Column(
-          children: [
-            // Modern Header with gradient
-            _buildModernHeader(),
-            
-            // Search Bar with enhanced design
-            _buildSearchBar(),
-            
-            // Enhanced Stats Overview
-            _buildStatsOverview(applications),
-            
-            // Modern Tab Bar
-            _buildCustomTabBar(),
-            
-            // Content with animation
-            Expanded(
-              child: filteredApplications.isEmpty
-                  ? _buildEmptyState()
-                  : TabBarView(
-                      controller: _tabController,
-                      children: [
-                        _buildApplicationsList(filteredApplications),
-                        _buildApplicationsList(_getActiveApplications(filteredApplications)),
-                        _buildApplicationsList(_getArchivedApplications(filteredApplications)),
-                      ],
-                    ),
-            ),
-          ],
+        child: FadeTransition(
+          opacity: _fadeAnimation,
+          child: Column(
+            children: [
+              // Modern Header
+              _buildModernHeader(),
+              
+              // Compact Stats Overview
+              _buildCompactStatsOverview(applications),
+              
+              // Search and Tab Bar
+              _buildSearchAndTabs(),
+              
+              // Applications List
+              Expanded(
+                child: _buildApplicationsList(filteredApplications),
+              ),
+            ],
+          ),
         ),
       ),
     );
   }
 
+  /// Builds the modern header section.
   Widget _buildModernHeader() {
     return Container(
-      width: double.infinity,
-      padding: const EdgeInsets.fromLTRB(24, 20, 24, 24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            AppTheme.primaryColor,
-            AppTheme.primaryColor.withValues(alpha: 0.8),
-          ],
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
       child: Row(
         children: [
           Expanded(
@@ -224,754 +307,508 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
               children: [
                 Text(
                   'My Applications',
-                  style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                    fontSize: 24,
+                  style: AppTheme.heading1.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
                   ),
                 ),
-                const SizedBox(height: 6),
+                const SizedBox(height: 4),
                 Text(
                   'Track your career journey',
-                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: Colors.white.withValues(alpha: 0.9),
-                    fontWeight: FontWeight.w500,
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textSecondary,
                   ),
                 ),
               ],
             ),
           ),
           Container(
-            decoration: BoxDecoration(
-              color: Colors.white.withValues(alpha: 0.2),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withValues(alpha: 0.3),
-                width: 1,
-              ),
-            ),
-            child: IconButton(
-              onPressed: () {},
-              icon: const Icon(
-                Icons.notifications_outlined,
-                color: Colors.white,
-                size: 24,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSearchBar() {
-    return Container(
-      margin: const EdgeInsets.all(20),
-      padding: const EdgeInsets.symmetric(horizontal: 20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: TextField(
-        onChanged: (value) => setState(() => _searchQuery = value),
-        decoration: InputDecoration(
-          hintText: 'Search applications...',
-          hintStyle: TextStyle(
-            color: Colors.grey.shade500,
-            fontWeight: FontWeight.w500,
-          ),
-          prefixIcon: Container(
-            margin: const EdgeInsets.all(8),
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: AppTheme.primaryColor.withValues(alpha: 0.1),
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: Icon(
-              Icons.search,
-              color: AppTheme.primaryColor,
-              size: 20,
-            ),
-          ),
-          border: InputBorder.none,
-          contentPadding: const EdgeInsets.symmetric(vertical: 18),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildStatsOverview(List<JobApplication> applications) {
-    final totalApps = applications.length;
-    final activeApps = _getActiveApplications(applications).length;
-    final interviews = applications.where((app) => app.status == ApplicationStatus.interview).length;
-    final offers = applications.where((app) => app.status == ApplicationStatus.offered).length;
-
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20),
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [
-            Colors.white,
-            Colors.grey.shade50,
-          ],
-        ),
-        borderRadius: BorderRadius.circular(24),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 20,
-            offset: const Offset(0, 8),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Row(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  gradient: LinearGradient(
-                    colors: [
-                      AppTheme.primaryColor.withValues(alpha: 0.2),
-                      AppTheme.primaryColor.withValues(alpha: 0.1),
-                    ],
-                  ),
-                  borderRadius: BorderRadius.circular(16),
-                ),
-                child: Icon(
-                  Icons.analytics_outlined,
-                  color: AppTheme.primaryColor,
-                  size: 24,
-                ),
-              ),
-              const SizedBox(width: 16),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      'Application Overview',
-                      style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                        fontWeight: FontWeight.bold,
-                        color: AppTheme.textPrimary,
-                      ),
-                    ),
-                    Text(
-                      'Your progress this month',
-                      style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        color: AppTheme.textSecondary,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 24),
-          Row(
-            children: [
-              _buildStatItem('Total', totalApps.toString(), Icons.work_outline, AppTheme.primaryColor),
-              _buildStatDivider(),
-              _buildStatItem('Active', activeApps.toString(), Icons.trending_up, Colors.blue),
-              _buildStatDivider(),
-              _buildStatItem('Interviews', interviews.toString(), Icons.people_outline, Colors.orange),
-              _buildStatDivider(),
-              _buildStatItem('Offers', offers.toString(), Icons.star_outline, AppTheme.successColor),
-            ],
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildStatItem(String label, String value, IconData icon, Color color) {
-    return Expanded(
-      child: Column(
-        children: [
-          Container(
             padding: const EdgeInsets.all(12),
             decoration: BoxDecoration(
-              color: color.withValues(alpha: 0.1),
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: AppTheme.cardShadow,
+            ),
+            child: Icon(
+              Icons.notifications_outlined,
+              color: AppTheme.primaryColor,
+              size: 24,
+            ),
+          ),
+        ],
+      ),
+    ).animate().slideY(begin: -0.3, duration: 500.ms, curve: Curves.easeOut);
+  }
+
+  /// Builds a compact stats overview section.
+  Widget _buildCompactStatsOverview(List<JobApplication> applications) {
+    final stats = _calculateStats(applications);
+    
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      child: Row(
+        children: [
+          _buildStatCard('Total', stats['total'].toString(), Icons.work_outline, AppTheme.primaryColor),
+          const SizedBox(width: 12),
+          _buildStatCard('Active', stats['active'].toString(), Icons.trending_up, AppTheme.successColor),
+          const SizedBox(width: 12),
+          _buildStatCard('Interviews', stats['interviews'].toString(), Icons.people_outline, AppTheme.warningColor),
+          const SizedBox(width: 12),
+          _buildStatCard('Offers', stats['offers'].toString(), Icons.star_outline, AppTheme.secondaryColor),
+        ],
+      ),
+    ).animate().scale(begin: const Offset(0.9, 0.9), duration: 600.ms, curve: Curves.easeOut);
+  }
+
+  /// Builds individual compact stat cards.
+  Widget _buildStatCard(String label, String value, IconData icon, Color color) {
+    return Expanded(
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(16),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: Column(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: color.withOpacity(0.1),
+                borderRadius: BorderRadius.circular(12),
+              ),
+              child: Icon(icon, color: color, size: 20),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              value,
+              style: TextStyle(
+                fontSize: 20,
+                fontWeight: FontWeight.bold,
+                color: color,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 11,
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  /// Builds the search bar and tab navigation.
+  Widget _buildSearchAndTabs() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      child: Column(
+        children: [
+          // Search Bar
+          Container(
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              boxShadow: AppTheme.cardShadow,
+            ),
+            child: TextField(
+              controller: _searchController,
+              style: AppTheme.bodyMedium.copyWith(color: AppTheme.textPrimary),
+              decoration: InputDecoration(
+                hintText: 'Search applications...',
+                hintStyle: AppTheme.bodyMedium.copyWith(color: AppTheme.textMuted),
+                prefixIcon: Icon(
+                  Icons.search,
+                  color: _isSearching ? AppTheme.primaryColor : AppTheme.textMuted,
+                ),
+                suffixIcon: _searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.clear),
+                        color: AppTheme.textMuted,
+                        onPressed: () {
+                          _searchController.clear();
+                          setState(() {
+                            _searchQuery = '';
+                            _isSearching = false;
+                          });
+                        },
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 16),
+              ),
+              onChanged: (value) {
+                setState(() {
+                  _searchQuery = value;
+                  _isSearching = value.isNotEmpty;
+                });
+              },
+              onTap: () {
+                setState(() {
+                  _isSearching = true;
+                });
+              },
+            ),
+          ),
+          
+          const SizedBox(height: 16),
+          
+          // Modern Tab Bar with Better Design
+          Container(
+            padding: const EdgeInsets.all(4),
+            decoration: BoxDecoration(
+              color: Colors.white,
               borderRadius: BorderRadius.circular(12),
+              boxShadow: AppTheme.cardShadow,
             ),
-            child: Icon(icon, color: color, size: 24),
-          ),
-          const SizedBox(height: 12),
-          Text(
-            value,
-            style: TextStyle(
-              color: color,
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              letterSpacing: -0.5,
-            ),
-          ),
-          const SizedBox(height: 4),
-          Text(
-            label,
-            style: TextStyle(
-              color: AppTheme.textSecondary,
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              letterSpacing: 0.5,
+            child: TabBar(
+              controller: _tabController,
+              indicator: BoxDecoration(
+                color: AppTheme.primaryColor,
+                borderRadius: BorderRadius.circular(25),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppTheme.primaryColor.withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 2),
+                  ),
+                ],
+              ),
+              indicatorSize: TabBarIndicatorSize.label,
+              indicatorPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              labelColor: Colors.white,
+              unselectedLabelColor: AppTheme.textSecondary,
+              labelStyle: const TextStyle(
+                fontWeight: FontWeight.w600,
+                fontSize: 13,
+                letterSpacing: 0.3,
+              ),
+              unselectedLabelStyle: const TextStyle(
+                fontWeight: FontWeight.w500,
+                fontSize: 13,
+              ),
+              dividerColor: Colors.transparent,
+              splashFactory: NoSplash.splashFactory,
+              overlayColor: WidgetStateProperty.all(Colors.transparent),
+              tabs: [
+                Container(
+                  width: 85,
+                  height: 36,
+                  alignment: Alignment.center,
+                  child: const Text('All'),
+                ),
+                Container(
+                  width: 85,
+                  height: 36,
+                  alignment: Alignment.center,
+                  child: const Text('Active'),
+                ),
+                Container(
+                  width: 85,
+                  height: 36,
+                  alignment: Alignment.center,
+                  child: const Text('Archived'),
+                ),
+              ],
             ),
           ),
         ],
       ),
-    );
+    ).animate().slideX(begin: -0.2, duration: 700.ms, curve: Curves.easeOut);
   }
 
-  Widget _buildStatDivider() {
-    return Container(
-      width: 1,
-      height: 60,
-      margin: const EdgeInsets.symmetric(horizontal: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topCenter,
-          end: Alignment.bottomCenter,
-          colors: [
-            Colors.transparent,
-            Colors.grey.shade300,
-            Colors.transparent,
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildCustomTabBar() {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 20, vertical: 20),
-      padding: const EdgeInsets.all(6),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.06),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
-      ),
-      child: TabBar(
-        controller: _tabController,
-        labelColor: Colors.white,
-        unselectedLabelColor: AppTheme.textSecondary,
-        labelStyle: const TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 14,
-        ),
-        unselectedLabelStyle: const TextStyle(
-          fontWeight: FontWeight.w500,
-          fontSize: 14,
-        ),
-        indicator: BoxDecoration(
-          gradient: LinearGradient(
-            colors: [AppTheme.primaryColor, AppTheme.primaryColor.withValues(alpha: 0.8)],
-          ),
-          borderRadius: BorderRadius.circular(12),
-          boxShadow: [
-            BoxShadow(
-              color: AppTheme.primaryColor.withValues(alpha: 0.3),
-              blurRadius: 8,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        indicatorSize: TabBarIndicatorSize.tab,
-        dividerColor: Colors.transparent,
-        tabs: const [
-          Tab(text: 'All Applications'),
-          Tab(text: 'Active'),
-          Tab(text: 'Archived'),
-        ],
-      ),
-    );
-  }
-
+  /// Builds the applications list.
   Widget _buildApplicationsList(List<JobApplication> applications) {
     if (applications.isEmpty) {
       return _buildEmptyState();
     }
 
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 24),
+      child: TabBarView(
+        controller: _tabController,
+        children: [
+          _buildApplicationsGrid(applications),
+          _buildApplicationsGrid(_getActiveApplications(applications)),
+          _buildApplicationsGrid(_getArchivedApplications(applications)),
+        ],
+      ),
+    );
+  }
+
+  /// Builds a list of modern application cards.
+  Widget _buildApplicationsGrid(List<JobApplication> applications) {
+    if (applications.isEmpty) {
+      return _buildEmptyState();
+    }
+
     return ListView.builder(
-      padding: const EdgeInsets.symmetric(horizontal: 20),
+      padding: const EdgeInsets.only(bottom: 100),
       itemCount: applications.length,
       itemBuilder: (context, index) {
         final application = applications[index];
-        return AnimatedContainer(
-          duration: Duration(milliseconds: 200 + (index * 50)),
-          curve: Curves.easeOutCubic,
+        return Container(
+          margin: const EdgeInsets.only(bottom: 16),
           child: _buildApplicationCard(application),
-        );
+        ).animate(delay: (index * 100).ms).slideY(
+          begin: 0.2,
+          duration: 500.ms,
+          curve: Curves.easeOut,
+        ).fadeIn();
       },
     );
   }
 
+  /// Builds a modern application card.
   Widget _buildApplicationCard(JobApplication application) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        gradient: LinearGradient(
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-          colors: [Colors.white, Colors.grey.shade50],
-        ),
+        color: Colors.white,
         borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.08),
-            blurRadius: 15,
-            offset: const Offset(0, 4),
-          ),
-        ],
-        border: Border.all(
-          color: Colors.grey.withValues(alpha: 0.1),
-          width: 1,
-        ),
+        boxShadow: AppTheme.cardShadow,
       ),
-      child: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Header with company and match percentage
-            Row(
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          borderRadius: BorderRadius.circular(20),
+          onTap: () {
+            // Handle card tap
+          },
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Container(
-                  width: 56,
-                  height: 56,
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.primaryColor.withValues(alpha: 0.2),
-                        AppTheme.primaryColor.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                      width: 1.5,
-                    ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      application.companyLogo,
-                      style: const TextStyle(fontSize: 24),
-                    ),
-                  ),
-                ),
-                const SizedBox(width: 16),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        application.company,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.w600,
-                          letterSpacing: 0.5,
+                // Header with company info
+                Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(16),
+                      ),
+                      child: Center(
+                        child: Text(
+                          application.companyLogo,
+                          style: const TextStyle(fontSize: 24),
                         ),
                       ),
-                      const SizedBox(height: 4),
-                      Text(
-                        application.jobTitle,
-                        style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: AppTheme.textPrimary,
-                          fontSize: 18,
-                          height: 1.2,
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            application.jobTitle,
+                            style: AppTheme.heading3.copyWith(
+                              color: AppTheme.textPrimary,
+                              fontSize: 16,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            application.company,
+                            style: AppTheme.bodyMedium.copyWith(
+                              color: AppTheme.textSecondary,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: application.statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: application.statusColor.withOpacity(0.3),
+                          width: 1,
                         ),
-                        maxLines: 2,
-                        overflow: TextOverflow.ellipsis,
                       ),
-                    ],
-                  ),
-                ),
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        AppTheme.successColor.withValues(alpha: 0.2),
-                        AppTheme.successColor.withValues(alpha: 0.1),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(20),
-                    border: Border.all(
-                      color: AppTheme.successColor.withValues(alpha: 0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Icon(
-                        Icons.trending_up,
-                        size: 14,
-                        color: AppTheme.successColor,
-                      ),
-                      const SizedBox(width: 4),
-                      Text(
+                      child: Text(
                         '${application.matchPercentage.toInt()}%',
                         style: TextStyle(
-                          color: AppTheme.successColor,
-                          fontWeight: FontWeight.bold,
                           fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: application.statusColor,
                         ),
                       ),
-                    ],
-                  ),
-                ),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Job details section
-            Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: Colors.grey.shade50,
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.grey.shade200),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    children: [
-                      Expanded(
-                        child: _buildInfoItem(
-                          Icons.location_on_outlined,
-                          application.location,
-                          AppTheme.primaryColor,
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: _buildInfoItem(
-                          Icons.schedule_outlined,
-                          _formatDate(application.appliedDate),
-                          Colors.orange,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 12),
-                  _buildInfoItem(
-                    Icons.payments_outlined,
-                    application.salary,
-                    Colors.green,
-                  ),
-                ],
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Skills and status row
-            Row(
-              children: [
-                Expanded(
-                  child: Wrap(
-                    spacing: 6,
-                    runSpacing: 6,
-                    children: application.skills.take(3).map((skill) => 
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                          borderRadius: BorderRadius.circular(12),
-                          border: Border.all(
-                            color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                            width: 1,
-                          ),
-                        ),
-                        child: Text(
-                          skill,
-                          style: TextStyle(
-                            color: AppTheme.primaryColor,
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ).toList(),
-                  ),
-                ),
-                const SizedBox(width: 12),
-                _buildStatusBadge(application.status),
-              ],
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Action buttons
-            Row(
-              children: [
-                Expanded(
-                  child: _buildActionButton(application.status),
-                ),
-                const SizedBox(width: 12),
-                Container(
-                  decoration: BoxDecoration(
-                    border: Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                      width: 1.5,
                     ),
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: IconButton(
-                    onPressed: () {},
-                    icon: Icon(
-                      Icons.more_vert,
-                      color: AppTheme.primaryColor,
-                      size: 20,
-                    ),
-                    padding: const EdgeInsets.all(8),
-                  ),
-                ),
-              ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildInfoItem(IconData icon, String text, Color color) {
-    return Row(
-      children: [
-        Container(
-          padding: const EdgeInsets.all(6),
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(8),
-          ),
-          child: Icon(icon, size: 16, color: color),
-        ),
-        const SizedBox(width: 8),
-        Expanded(
-          child: Text(
-            text,
-            style: TextStyle(
-              fontSize: 12,
-              color: AppTheme.textSecondary,
-              fontWeight: FontWeight.w600,
-            ),
-            overflow: TextOverflow.ellipsis,
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildStatusBadge(ApplicationStatus status) {
-    Color color;
-    String text;
-    IconData icon;
-
-    switch (status) {
-      case ApplicationStatus.applied:
-        color = Colors.blue;
-        text = 'Applied';
-        icon = Icons.send_outlined;
-        break;
-      case ApplicationStatus.reviewing:
-        color = Colors.orange;
-        text = 'Under Review';
-        icon = Icons.visibility_outlined;
-        break;
-      case ApplicationStatus.interview:
-        color = AppTheme.primaryColor;
-        text = 'Interview';
-        icon = Icons.people_outline;
-        break;
-      case ApplicationStatus.offered:
-        color = AppTheme.successColor;
-        text = 'Offered';
-        icon = Icons.star_outline;
-        break;
-      case ApplicationStatus.rejected:
-        color = AppTheme.errorColor;
-        text = 'Not Selected';
-        icon = Icons.close_outlined;
-        break;
-    }
-
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        gradient: LinearGradient(
-          colors: [
-            color.withValues(alpha: 0.2),
-            color.withValues(alpha: 0.1),
-          ],
-        ),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(color: color.withValues(alpha: 0.4), width: 1.5),
-      ),
-      child: Row(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Icon(icon, size: 14, color: color),
-          const SizedBox(width: 6),
-          Text(
-            text,
-            style: TextStyle(
-              color: color,
-              fontSize: 12,
-              fontWeight: FontWeight.bold,
-              letterSpacing: 0.3,
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildActionButton(ApplicationStatus status) {
-    String text;
-    IconData icon;
-    Color? backgroundColor;
-    Color? textColor;
-
-    switch (status) {
-      case ApplicationStatus.interview:
-        text = 'Schedule Interview';
-        icon = Icons.event_outlined;
-        backgroundColor = AppTheme.primaryColor;
-        textColor = Colors.white;
-        break;
-      case ApplicationStatus.offered:
-        text = 'Accept Offer';
-        icon = Icons.handshake_outlined;
-        backgroundColor = AppTheme.successColor;
-        textColor = Colors.white;
-        break;
-      case ApplicationStatus.reviewing:
-        text = 'Follow Up';
-        icon = Icons.message_outlined;
-        backgroundColor = null;
-        textColor = AppTheme.primaryColor;
-        break;
-      default:
-        text = 'View Details';
-        icon = Icons.visibility_outlined;
-        backgroundColor = null;
-        textColor = AppTheme.primaryColor;
-    }
-
-    return ElevatedButton.icon(
-      onPressed: () {},
-      icon: Icon(icon, size: 18),
-      label: Text(
-        text,
-        style: TextStyle(
-          fontWeight: FontWeight.w600,
-          fontSize: 13,
-        ),
-      ),
-      style: ElevatedButton.styleFrom(
-        backgroundColor: backgroundColor ?? Colors.transparent,
-        foregroundColor: textColor,
-        elevation: backgroundColor != null ? 2 : 0,
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(12),
-          side: backgroundColor == null 
-            ? BorderSide(color: AppTheme.primaryColor.withValues(alpha: 0.3), width: 1.5)
-            : BorderSide.none,
-        ),
-        shadowColor: backgroundColor?.withValues(alpha: 0.3),
-      ),
-    );
-  }
-
-  Widget _buildEmptyState() {
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.all(40),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Container(
-              width: 120,
-              height: 120,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.grey.shade100,
-                    Colors.grey.shade50,
                   ],
                 ),
-                borderRadius: BorderRadius.circular(60),
-                border: Border.all(
-                  color: Colors.grey.shade200,
-                  width: 2,
+                
+                const SizedBox(height: 16),
+                
+                // Location and salary
+                Row(
+                  children: [
+                    Icon(
+                      Icons.location_on_outlined,
+                      size: 16,
+                      color: AppTheme.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Text(
+                      application.location,
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.textSecondary,
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Icon(
+                      Icons.attach_money,
+                      size: 16,
+                      color: AppTheme.textMuted,
+                    ),
+                    const SizedBox(width: 4),
+                    Expanded(
+                      child: Text(
+                        application.salary,
+                        style: AppTheme.bodySmall.copyWith(
+                          color: AppTheme.textSecondary,
+                        ),
+                      ),
+                    ),
+                  ],
                 ),
+                
+                const SizedBox(height: 12),
+                
+                // Skills
+                Wrap(
+                  spacing: 6,
+                  runSpacing: 6,
+                  children: application.skills.take(3).map((skill) {
+                    return Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                      decoration: BoxDecoration(
+                        color: AppTheme.primaryColor.withOpacity(0.08),
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Text(
+                        skill,
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: AppTheme.primaryColor,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    );
+                  }).toList(),
+                ),
+                
+                const SizedBox(height: 16),
+                
+                // Status and time
+                Row(
+                  children: [
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: application.statusColor.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _getStatusIcon(application.status),
+                            size: 12,
+                            color: application.statusColor,
+                          ),
+                          const SizedBox(width: 4),
+                          Text(
+                            application.statusMessage,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: application.statusColor,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const Spacer(),
+                    Text(
+                      application.appliedTimeAgo,
+                      style: AppTheme.bodySmall.copyWith(
+                        color: AppTheme.textMuted,
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Container(
+                      padding: const EdgeInsets.all(6),
+                      decoration: BoxDecoration(
+                        color: AppTheme.backgroundColor,
+                        borderRadius: BorderRadius.circular(8),
+                      ),
+                      child: Icon(
+                        Icons.more_vert,
+                        color: AppTheme.textMuted,
+                        size: 16,
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  /// Builds the empty state when no applications are found.
+  Widget _buildEmptyState() {
+    return Center(
+      child: Container(
+        padding: const EdgeInsets.all(40),
+        margin: const EdgeInsets.symmetric(horizontal: 40),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: AppTheme.cardShadow,
+        ),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: AppTheme.primaryColor.withOpacity(0.1),
+                shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.work_outline,
-                size: 60,
-                color: Colors.grey.shade400,
+                Icons.search_off,
+                size: 48,
+                color: AppTheme.primaryColor,
               ),
             ),
-            const SizedBox(height: 32),
+            const SizedBox(height: 20),
             Text(
-              'No applications yet',
-              style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                fontWeight: FontWeight.bold,
+              'No Applications Found',
+              style: AppTheme.heading3.copyWith(
                 color: AppTheme.textPrimary,
               ),
             ),
-            const SizedBox(height: 12),
+            const SizedBox(height: 8),
             Text(
-              'Start exploring jobs and track your applications here.\nYour career journey begins with a single swipe!',
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+              'Try adjusting your search or filters',
+              style: AppTheme.bodyMedium.copyWith(
                 color: AppTheme.textSecondary,
-                height: 1.6,
               ),
-            ),
-            const SizedBox(height: 32),
-            ElevatedButton.icon(
-              onPressed: () => context.go('/discovery'),
-              icon: const Icon(Icons.explore),
-              label: const Text('Start Exploring Jobs'),
-              style: ElevatedButton.styleFrom(
-                padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-                elevation: 2,
-                shadowColor: AppTheme.primaryColor.withValues(alpha: 0.3),
-              ),
+              textAlign: TextAlign.center,
             ),
           ],
         ),
@@ -979,35 +816,50 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
     );
   }
 
+  /// Filters applications based on search query.
   List<JobApplication> _filterApplications(List<JobApplication> applications) {
     if (_searchQuery.isEmpty) return applications;
     
-    return applications.where((app) =>
-      app.jobTitle.toLowerCase().contains(_searchQuery.toLowerCase()) ||
-      app.company.toLowerCase().contains(_searchQuery.toLowerCase())
-    ).toList();
+    return applications.where((app) {
+      return app.jobTitle.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+             app.company.toLowerCase().contains(_searchQuery.toLowerCase()) ||
+             app.location.toLowerCase().contains(_searchQuery.toLowerCase());
+    }).toList();
   }
 
+  /// Gets only active applications (not rejected).
   List<JobApplication> _getActiveApplications(List<JobApplication> applications) {
     return applications.where((app) => app.status != ApplicationStatus.rejected).toList();
   }
 
+  /// Gets archived applications (rejected).
   List<JobApplication> _getArchivedApplications(List<JobApplication> applications) {
     return applications.where((app) => app.status == ApplicationStatus.rejected).toList();
   }
 
-  String _formatDate(DateTime date) {
-    final now = DateTime.now();
-    final difference = now.difference(date);
+  /// Calculates statistics for the overview section.
+  Map<String, int> _calculateStats(List<JobApplication> applications) {
+    return {
+      'total': applications.length,
+      'active': _getActiveApplications(applications).length,
+      'interviews': applications.where((app) => app.status == ApplicationStatus.interview).length,
+      'offers': applications.where((app) => app.status == ApplicationStatus.offered).length,
+    };
+  }
 
-    if (difference.inDays == 0) {
-      return 'Today';
-    } else if (difference.inDays == 1) {
-      return 'Yesterday';
-    } else if (difference.inDays < 7) {
-      return '${difference.inDays} days ago';
-    } else {
-      return '${(difference.inDays / 7).floor()} weeks ago';
+  /// Returns the appropriate icon for each application status.
+  IconData _getStatusIcon(ApplicationStatus status) {
+    switch (status) {
+      case ApplicationStatus.applied:
+        return Icons.send;
+      case ApplicationStatus.reviewing:
+        return Icons.visibility;
+      case ApplicationStatus.interview:
+        return Icons.people;
+      case ApplicationStatus.offered:
+        return Icons.star;
+      case ApplicationStatus.rejected:
+        return Icons.close;
     }
   }
 } 

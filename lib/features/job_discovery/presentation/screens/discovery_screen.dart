@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
 
@@ -299,30 +300,82 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
     );
   }
 
+  /// Builds the header section matching the applications page style.
+  Widget _buildHeader() {
+    return Container(
+      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      child: Row(
+        children: [
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Discover Jobs',
+                  style: AppTheme.heading1.copyWith(
+                    color: AppTheme.textPrimary,
+                    fontSize: 28,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  'Find your perfect match',
+                  style: AppTheme.bodyMedium.copyWith(
+                    color: AppTheme.textSecondary,
+                  ),
+                ),
+              ],
+            ),
+          ),
+          GestureDetector(
+            onTap: () => context.go('/profile'),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(16),
+                boxShadow: AppTheme.cardShadow,
+              ),
+              child: Icon(
+                Icons.person,
+                color: AppTheme.primaryColor,
+                size: 24,
+              ),
+            ),
+          ),
+        ],
+      ),
+    ).animate().slideY(begin: -0.3, duration: 500.ms, curve: Curves.easeOut);
+  }
+
   @override
   Widget build(BuildContext context) {
     final discoveryState = ref.watch(jobDiscoveryProvider);
     
     return Scaffold(
       backgroundColor: AppTheme.backgroundColor,
-      appBar: AppBar(
-        title: const Text('Discover Jobs'),
-        centerTitle: true,
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => context.go('/profile'),
-          ),
-        ],
-      ),
       body: SafeArea(
-        child: discoveryState.isLoading
-            ? const Center(child: CircularProgressIndicator())
-            : discoveryState.jobs.isEmpty
-                ? _buildEmptyState()
-                : _buildJobCards(discoveryState),
+        child: Column(
+          children: [
+            // Custom header matching applications page
+            _buildHeader(),
+            
+            // Main content
+            Expanded(
+              child: discoveryState.isLoading
+                  ? Center(
+                      child: const CircularProgressIndicator()
+                          .animate()
+                          .scale(duration: 800.ms, curve: Curves.elasticOut)
+                          .fadeIn(),
+                    )
+                  : discoveryState.jobs.isEmpty
+                      ? _buildEmptyState()
+                      : _buildJobCards(discoveryState),
+            ),
+          ],
+        ),
       ),
-
     );
   }
 
@@ -331,28 +384,49 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(
-            Icons.work_outline,
-            size: 80,
-            color: Colors.grey.shade400,
-          ),
-          const SizedBox(height: 16),
+          Container(
+            padding: const EdgeInsets.all(24),
+            decoration: BoxDecoration(
+              color: AppTheme.primaryColor.withOpacity(0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(
+              Icons.work_outline,
+              size: 64,
+              color: AppTheme.primaryColor,
+            ),
+          ).animate().scale(duration: 800.ms, curve: Curves.elasticOut),
+          
+          const SizedBox(height: 24),
+          
           Text(
             'No more jobs for now',
-            style: Theme.of(context).textTheme.headlineSmall,
-          ),
-          const SizedBox(height: 8),
+            style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+              color: AppTheme.textPrimary,
+              fontWeight: FontWeight.bold,
+            ),
+          ).animate(delay: 200.ms).fadeIn().slideY(begin: 0.3),
+          
+          const SizedBox(height: 12),
+          
           Text(
             'Check back later for new opportunities',
             style: Theme.of(context).textTheme.bodyLarge?.copyWith(
               color: AppTheme.textSecondary,
             ),
-          ),
-          const SizedBox(height: 24),
-          ElevatedButton(
+            textAlign: TextAlign.center,
+          ).animate(delay: 400.ms).fadeIn().slideY(begin: 0.3),
+          
+          const SizedBox(height: 32),
+          
+          ElevatedButton.icon(
             onPressed: () => ref.read(jobDiscoveryProvider.notifier)._loadJobs(),
-            child: const Text('Refresh'),
-          ),
+            icon: const Icon(Icons.refresh),
+            label: const Text('Refresh Jobs'),
+            style: ElevatedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 32, vertical: 16),
+            ),
+          ).animate(delay: 600.ms).scale(duration: 600.ms, curve: Curves.elasticOut),
         ],
       ),
     );
@@ -419,7 +493,10 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                         scale: _cardScaleAnimation.value,
                         child: Stack(
                           children: [
-                            _buildJobCard(state.jobs[state.currentIndex]),
+                            _buildJobCard(state.jobs[state.currentIndex])
+                                .animate()
+                                .scale(begin: const Offset(0.95, 0.95), duration: 400.ms, curve: Curves.easeOut)
+                                .fadeIn(duration: 300.ms),
                             
                             // Stamp overlay on current card
                             if (_dragOffset != 0) ...[
@@ -569,24 +646,33 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Company header - Compact design
+            // Company header - Clean design
             Row(
               children: [
                 Container(
-                  width: 56,
-                  height: 56,
+                  width: 64,
+                  height: 64,
                   decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(14),
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor.withOpacity(0.15),
+                        AppTheme.primaryColor.withOpacity(0.05),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(20),
+                    border: Border.all(
+                      color: AppTheme.primaryColor.withOpacity(0.2),
+                      width: 2,
+                    ),
                   ),
                   child: Center(
                     child: Text(
                       job.companyLogo,
-                      style: const TextStyle(fontSize: 28),
+                      style: const TextStyle(fontSize: 32),
                     ),
                   ),
                 ),
-                const SizedBox(width: 16),
+                const SizedBox(width: 20),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -595,16 +681,56 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                         job.company,
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.textSecondary,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 2),
+                      const SizedBox(height: 4),
                       Text(
                         job.title,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           height: 1.2,
-                          fontSize: 20,
+                          fontSize: 22,
+                          color: AppTheme.textPrimary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                // Match percentage badge
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    gradient: LinearGradient(
+                      colors: [
+                        AppTheme.primaryColor,
+                        AppTheme.primaryColor.withOpacity(0.8),
+                      ],
+                    ),
+                    borderRadius: BorderRadius.circular(12),
+                    boxShadow: [
+                      BoxShadow(
+                        color: AppTheme.primaryColor.withOpacity(0.3),
+                        blurRadius: 8,
+                        offset: const Offset(0, 2),
+                      ),
+                    ],
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      const Icon(
+                        Icons.star,
+                        color: Colors.white,
+                        size: 16,
+                      ),
+                      const SizedBox(width: 4),
+                      Text(
+                        '95%',
+                        style: const TextStyle(
+                          fontSize: 14,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
                         ),
                       ),
                     ],
@@ -615,124 +741,143 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
             
             const SizedBox(height: 20),
             
-            // Job details - More compact
-            Row(
-              children: [
-                Expanded(child: _buildCompactDetail(Icons.location_on_outlined, job.location)),
-                Expanded(child: _buildCompactDetail(Icons.payments_outlined, job.salary)),
-              ],
-            ),
-            const SizedBox(height: 8),
-            Row(
-              children: [
-                Expanded(child: _buildCompactDetail(Icons.access_time_outlined, job.type)),
-                Expanded(child: _buildCompactDetail(Icons.trending_up_outlined, job.level)),
-              ],
+            // Job details - Professional layout
+            Container(
+              padding: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: AppTheme.backgroundColor,
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: Colors.grey.shade200,
+                  width: 1,
+                ),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    children: [
+                      Expanded(child: _buildDetailItem(Icons.location_on_outlined, 'Location', job.location)),
+                      Expanded(child: _buildDetailItem(Icons.payments_outlined, 'Salary', job.salary)),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(child: _buildDetailItem(Icons.access_time_outlined, 'Type', job.type)),
+                      Expanded(child: _buildDetailItem(Icons.trending_up_outlined, 'Level', job.level)),
+                    ],
+                  ),
+                ],
+              ),
             ),
             
             const SizedBox(height: 20),
             
-            // Skills tags - Moved above description and made smaller
+            // Skills section - Clean modern design
             if (job.skills.isNotEmpty) ...[
-              Text(
-                'Skills Required',
-                style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 14,
-                ),
+              Row(
+                children: [
+                  Icon(
+                    Icons.star_border,
+                    color: AppTheme.primaryColor,
+                    size: 16,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    'Required Skills',
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: AppTheme.textPrimary,
+                    ),
+                  ),
+                ],
               ),
               const SizedBox(height: 8),
               Wrap(
-                spacing: 4,
-                runSpacing: 4,
-                children: job.skills.take(6).map((skill) => Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                  decoration: BoxDecoration(
-                    color: AppTheme.primaryColor.withValues(alpha: 0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: AppTheme.primaryColor.withValues(alpha: 0.3),
-                      width: 1,
+                spacing: 6,
+                runSpacing: 6,
+                children: job.skills.take(6).map((skill) {
+                  return Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          AppTheme.primaryColor.withOpacity(0.1),
+                          AppTheme.primaryColor.withOpacity(0.05),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(12),
+                      border: Border.all(
+                        color: AppTheme.primaryColor.withOpacity(0.3),
+                        width: 1,
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    skill,
-                    style: const TextStyle(
-                      color: AppTheme.primaryColor,
-                      fontWeight: FontWeight.w600,
-                      fontSize: 11,
+                    child: Text(
+                      skill,
+                      style: TextStyle(
+                        color: AppTheme.primaryColor,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 11,
+                      ),
                     ),
-                  ),
-                )).toList(),
+                  );
+                }).toList(),
               ),
-              const SizedBox(height: 16),
+              const SizedBox(height: 14),
             ],
             
-            // Description - Now takes up remaining space
-            Text(
-              'About this role',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
+            // Description - Professional layout
+            Row(
+              children: [
+                Icon(
+                  Icons.description_outlined,
+                  color: AppTheme.primaryColor,
+                  size: 18,
+                ),
+                const SizedBox(width: 8),
+                Text(
+                  'About this role',
+                  style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                    color: AppTheme.textPrimary,
+                  ),
+                ),
+              ],
             ),
             const SizedBox(height: 12),
             
-            // Expanded scrollable description area - Now gets more space
+            // Expanded scrollable description area
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: const EdgeInsets.all(20),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
+                  color: Colors.white,
                   borderRadius: BorderRadius.circular(16),
-                  border: Border.all(color: Colors.grey.shade200),
+                  border: Border.all(
+                    color: Colors.grey.shade200,
+                    width: 1,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withOpacity(0.03),
+                      blurRadius: 8,
+                      offset: const Offset(0, 2),
+                    ),
+                  ],
                 ),
                 child: SingleChildScrollView(
                   child: Text(
                     job.description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      height: 1.6,
+                      height: 1.7,
                       color: AppTheme.textPrimary,
                       fontSize: 15,
                     ),
                   ),
                 ),
-              ),
-            ),
-            
-            const SizedBox(height: 16),
-            
-            // Swipe hint at bottom - Smaller
-            Container(
-              padding: const EdgeInsets.symmetric(vertical: 12),
-              decoration: BoxDecoration(
-                color: AppTheme.primaryColor.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  Icon(
-                    Icons.swipe_left,
-                    color: AppTheme.textSecondary,
-                    size: 18,
-                  ),
-                  const SizedBox(width: 8),
-                  Text(
-                    'Swipe to skip or apply',
-                    style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: AppTheme.textSecondary,
-                      fontWeight: FontWeight.w500,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Icon(
-                    Icons.swipe_right,
-                    color: AppTheme.textSecondary,
-                    size: 18,
-                  ),
-                ],
               ),
             ),
           ],
@@ -782,6 +927,42 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
     );
   }
 
+
+
+  Widget _buildDetailItem(IconData icon, String label, String value) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Row(
+          children: [
+            Icon(
+              icon,
+              size: 16,
+              color: AppTheme.primaryColor,
+            ),
+            const SizedBox(width: 6),
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 12,
+                color: AppTheme.textSecondary,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 4),
+        Text(
+          value,
+          style: TextStyle(
+            fontSize: 14,
+            color: AppTheme.textPrimary,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
 
 }
 
