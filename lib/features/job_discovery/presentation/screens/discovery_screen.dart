@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 
 // Simple data classes for MVP
 class SimpleJob {
@@ -303,7 +304,12 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
   /// Builds the header section matching the applications page style.
   Widget _buildHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      padding: EdgeInsets.fromLTRB(
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 48),
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 40),
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 48),
+        16,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -564,8 +570,8 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                                     child: Opacity(
                                       opacity: (_dragOffset.abs() / 100).clamp(0.6, 1.0),
                                       child: Container(
-                                        width: 120,
-                                        height: 120,
+                                        width: Responsive.stampSize(context),
+                                        height: Responsive.stampSize(context),
                                         decoration: BoxDecoration(
                                           color: Colors.white,
                                           shape: BoxShape.circle,
@@ -629,7 +635,7 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
   Widget _buildJobCard(SimpleJob job, {bool isBackground = false}) {
     return Container(
       width: double.infinity,
-      height: MediaQuery.of(context).size.height * 0.75,
+      height: Responsive.jobCardHeight(context),
       decoration: BoxDecoration(
         color: isBackground ? Colors.grey.shade200 : Colors.white,
         borderRadius: BorderRadius.circular(24),

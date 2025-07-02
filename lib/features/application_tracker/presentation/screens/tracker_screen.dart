@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 import '../../../../data/models/job.dart';
 
 /// Represents the status of a job application.
@@ -298,7 +299,12 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
   /// Builds the modern header section.
   Widget _buildModernHeader() {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      padding: EdgeInsets.fromLTRB(
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 48),
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 40),
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 48),
+        16,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -345,58 +351,95 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
     final stats = _calculateStats(applications);
     
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: Responsive.value(context, mobile: 16, tablet: 24, desktop: 32),
+        vertical: 8,
+      ),
       child: Row(
         children: [
           _buildStatCard('Total', stats['total'].toString(), Icons.work_outline, AppTheme.primaryColor),
-          const SizedBox(width: 12),
+          SizedBox(width: Responsive.spacing(context, mobile: 8, tablet: 12, desktop: 16)),
           _buildStatCard('Active', stats['active'].toString(), Icons.trending_up, AppTheme.successColor),
-          const SizedBox(width: 12),
+          SizedBox(width: Responsive.spacing(context, mobile: 8, tablet: 12, desktop: 16)),
           _buildStatCard('Interviews', stats['interviews'].toString(), Icons.people_outline, AppTheme.warningColor),
-          const SizedBox(width: 12),
+          SizedBox(width: Responsive.spacing(context, mobile: 8, tablet: 12, desktop: 16)),
           _buildStatCard('Offers', stats['offers'].toString(), Icons.star_outline, AppTheme.secondaryColor),
         ],
       ),
     ).animate().scale(begin: const Offset(0.9, 0.9), duration: 600.ms, curve: Curves.easeOut);
   }
 
+  /// Returns shorter labels for small devices
+  String _getShortLabel(String label) {
+    if (!Responsive.isSmallMobile(context)) return label;
+    
+    switch (label) {
+      case 'Interviews':
+        return 'Intrvws';
+      case 'Total':
+        return 'Total';
+      case 'Active':
+        return 'Active';
+      case 'Offers':
+        return 'Offers';
+      default:
+        return label;
+    }
+  }
+
   /// Builds individual compact stat cards.
   Widget _buildStatCard(String label, String value, IconData icon, Color color) {
     return Expanded(
       child: Container(
-        padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 12),
+        padding: EdgeInsets.symmetric(
+          vertical: Responsive.value(context, mobile: 12, tablet: 16, desktop: 20),
+          horizontal: Responsive.value(context, mobile: 6, tablet: 12, desktop: 16),
+        ),
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(
+            Responsive.borderRadius(context, mobile: 12, tablet: 16, desktop: 20),
+          ),
           boxShadow: AppTheme.cardShadow,
         ),
         child: Column(
           children: [
             Container(
-              padding: const EdgeInsets.all(8),
+              padding: EdgeInsets.all(
+                Responsive.value(context, mobile: 6, tablet: 8, desktop: 10),
+              ),
               decoration: BoxDecoration(
                 color: color.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(
+                  Responsive.value(context, mobile: 8, tablet: 10, desktop: 12),
+                ),
               ),
-              child: Icon(icon, color: color, size: 20),
+              child: Icon(
+                icon, 
+                color: color, 
+                size: Responsive.iconSize(context, mobile: 16, tablet: 20, desktop: 24),
+              ),
             ),
-            const SizedBox(height: 8),
+            SizedBox(height: Responsive.value(context, mobile: 6, tablet: 8, desktop: 10)),
             Text(
               value,
               style: TextStyle(
-                fontSize: 20,
+                fontSize: Responsive.fontSize(context, mobile: 16, tablet: 18, desktop: 22),
                 fontWeight: FontWeight.bold,
                 color: color,
               ),
             ),
-            const SizedBox(height: 2),
+            SizedBox(height: Responsive.value(context, mobile: 2, tablet: 3, desktop: 4)),
             Text(
-              label,
+              _getShortLabel(label),
               style: TextStyle(
-                fontSize: 11,
+                fontSize: Responsive.fontSize(context, mobile: 9, tablet: 11, desktop: 13),
                 color: AppTheme.textSecondary,
                 fontWeight: FontWeight.w500,
               ),
+              textAlign: TextAlign.center,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
           ],
         ),
@@ -407,7 +450,10 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
   /// Builds the search bar and tab navigation.
   Widget _buildSearchAndTabs() {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+      margin: EdgeInsets.symmetric(
+        horizontal: Responsive.value(context, mobile: 16, tablet: 24, desktop: 32),
+        vertical: Responsive.value(context, mobile: 12, tablet: 16, desktop: 20),
+      ),
       child: Column(
         children: [
           // Search Bar
@@ -498,22 +544,26 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
               overlayColor: WidgetStateProperty.all(Colors.transparent),
               tabs: [
                 Container(
-                  width: 85,
-                  height: 36,
+                  width: Responsive.tabWidth(context),
+                  height: Responsive.value(context, mobile: 36, tablet: 42, desktop: 48),
                   alignment: Alignment.center,
                   child: const Text('All'),
                 ),
                 Container(
-                  width: 85,
-                  height: 36,
+                  width: Responsive.tabWidth(context),
+                  height: Responsive.value(context, mobile: 36, tablet: 42, desktop: 48),
                   alignment: Alignment.center,
                   child: const Text('Active'),
                 ),
                 Container(
-                  width: 85,
-                  height: 36,
+                  width: Responsive.tabWidth(context),
+                  height: Responsive.value(context, mobile: 36, tablet: 42, desktop: 48),
                   alignment: Alignment.center,
-                  child: const Text('Archived'),
+                  child: Text(
+                    Responsive.isSmallMobile(context) ? 'Archive' : 'Archived',
+                    style: const TextStyle(fontSize: 13),
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
               ],
             ),
@@ -530,7 +580,9 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
     }
 
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24),
+      margin: EdgeInsets.symmetric(
+        horizontal: Responsive.value(context, mobile: 16, tablet: 24, desktop: 32),
+      ),
       child: TabBarView(
         controller: _tabController,
         children: [
@@ -589,16 +641,20 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
                 Row(
                   children: [
                     Container(
-                      width: 50,
-                      height: 50,
+                      width: Responsive.value(context, mobile: 50, tablet: 60, desktop: 70),
+                      height: Responsive.value(context, mobile: 50, tablet: 60, desktop: 70),
                       decoration: BoxDecoration(
                         color: AppTheme.primaryColor.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(16),
+                        borderRadius: BorderRadius.circular(
+                          Responsive.value(context, mobile: 16, tablet: 20, desktop: 24),
+                        ),
                       ),
                       child: Center(
                         child: Text(
                           application.companyLogo,
-                          style: const TextStyle(fontSize: 24),
+                          style: TextStyle(
+                            fontSize: Responsive.value(context, mobile: 24, tablet: 28, desktop: 32),
+                          ),
                         ),
                       ),
                     ),

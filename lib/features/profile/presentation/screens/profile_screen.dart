@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:go_router/go_router.dart';
 import '../../../../core/theme/app_theme.dart';
+import '../../../../core/utils/responsive.dart';
 
 /// Profile data model for MVP
 class UserProfileData {
@@ -108,13 +109,13 @@ class ProfileScreen extends ConsumerWidget {
           child: Column(
             children: [
               // Clean header matching applications page
-              _buildHeader(),
+              _buildHeader(context),
               
               // Profile info card
-              _buildProfileCard(profile),
+              _buildProfileCard(profile, context),
               
               // Quick stats cards
-              _buildStatsCards(profile),
+              _buildStatsCards(profile, context),
               
               // Quick actions
               _buildQuickActions(),
@@ -134,9 +135,14 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   /// Builds the header section matching the applications page style
-  Widget _buildHeader() {
+  Widget _buildHeader(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 24, 24, 16),
+      padding: EdgeInsets.fromLTRB(
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 48),
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 40),
+        Responsive.value(context, mobile: 24, tablet: 32, desktop: 48),
+        16,
+      ),
       child: Row(
         children: [
           Expanded(
@@ -179,9 +185,12 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   /// Builds the main profile information card
-  Widget _buildProfileCard(UserProfileData profile) {
+  Widget _buildProfileCard(UserProfileData profile, BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: Responsive.value(context, mobile: 16, tablet: 24, desktop: 32),
+        vertical: 8,
+      ),
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
         color: Colors.white,
@@ -192,8 +201,8 @@ class ProfileScreen extends ConsumerWidget {
         children: [
           // Profile avatar
           Container(
-            width: 100,
-            height: 100,
+            width: Responsive.avatarSize(context),
+            height: Responsive.avatarSize(context),
             decoration: BoxDecoration(
               gradient: LinearGradient(
                 colors: [
@@ -350,9 +359,12 @@ class ProfileScreen extends ConsumerWidget {
   }
 
   /// Builds stats cards section
-  Widget _buildStatsCards(UserProfileData profile) {
+  Widget _buildStatsCards(UserProfileData profile, BuildContext context) {
     return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 8),
+      margin: EdgeInsets.symmetric(
+        horizontal: Responsive.value(context, mobile: 16, tablet: 24, desktop: 32),
+        vertical: 8,
+      ),
       child: Row(
         children: [
           _buildStatCard('Applications', profile.applicationsCount.toString(), Icons.work_outline, AppTheme.primaryColor),
