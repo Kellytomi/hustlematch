@@ -505,7 +505,7 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
           
           const SizedBox(height: 16),
           
-          // Modern Tab Bar with Better Design
+          // Modern Tab Bar with Cross-Platform Consistency
           Container(
             padding: const EdgeInsets.all(4),
             decoration: BoxDecoration(
@@ -526,8 +526,11 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
                   ),
                 ],
               ),
-              indicatorSize: TabBarIndicatorSize.label,
-              indicatorPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+              indicatorSize: TabBarIndicatorSize.tab,
+              indicatorPadding: EdgeInsets.symmetric(
+                horizontal: Responsive.value(context, mobile: 6, tablet: 8, desktop: 10),
+                vertical: 4,
+              ),
               labelColor: Colors.white,
               unselectedLabelColor: AppTheme.textSecondary,
               labelStyle: const TextStyle(
@@ -542,27 +545,38 @@ class _TrackerScreenState extends ConsumerState<TrackerScreen>
               dividerColor: Colors.transparent,
               splashFactory: NoSplash.splashFactory,
               overlayColor: WidgetStateProperty.all(Colors.transparent),
+              isScrollable: false,
+              tabAlignment: TabAlignment.fill,
               tabs: [
-                Container(
+                SizedBox(
                   width: Responsive.tabWidth(context),
                   height: Responsive.value(context, mobile: 36, tablet: 42, desktop: 48),
-                  alignment: Alignment.center,
-                  child: const Text('All'),
+                  child: const Tab(
+                    child: Text(
+                      'All',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
                 ),
-                Container(
+                SizedBox(
                   width: Responsive.tabWidth(context),
                   height: Responsive.value(context, mobile: 36, tablet: 42, desktop: 48),
-                  alignment: Alignment.center,
-                  child: const Text('Active'),
+                  child: const Tab(
+                    child: Text(
+                      'Active',
+                      style: TextStyle(fontSize: 13),
+                    ),
+                  ),
                 ),
-                Container(
+                SizedBox(
                   width: Responsive.tabWidth(context),
                   height: Responsive.value(context, mobile: 36, tablet: 42, desktop: 48),
-                  alignment: Alignment.center,
-                  child: Text(
-                    Responsive.isSmallMobile(context) ? 'Archive' : 'Archived',
-                    style: const TextStyle(fontSize: 13),
-                    overflow: TextOverflow.ellipsis,
+                  child: Tab(
+                    child: Text(
+                      Responsive.isSmallMobile(context) ? 'Archive' : 'Archived',
+                      style: const TextStyle(fontSize: 13),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],

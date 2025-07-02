@@ -653,16 +653,18 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
         ],
       ),
       child: Padding(
-        padding: const EdgeInsets.all(24.0),
+        padding: EdgeInsets.all(
+          Responsive.value(context, mobile: 16, tablet: 20, desktop: 24),
+        ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Company header - Clean design
+            // Company header - Responsive design
             Row(
               children: [
                 Container(
-                  width: 64,
-                  height: 64,
+                  width: Responsive.value(context, mobile: 48, tablet: 56, desktop: 64),
+                  height: Responsive.value(context, mobile: 48, tablet: 56, desktop: 64),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -670,20 +672,24 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                         AppTheme.primaryColor.withOpacity(0.05),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(20),
+                    borderRadius: BorderRadius.circular(
+                      Responsive.value(context, mobile: 14, tablet: 18, desktop: 20),
+                    ),
                     border: Border.all(
                       color: AppTheme.primaryColor.withOpacity(0.2),
-                      width: 2,
+                      width: Responsive.value(context, mobile: 1.5, tablet: 2, desktop: 2),
                     ),
                   ),
                   child: Center(
                     child: Text(
                       job.companyLogo,
-                      style: const TextStyle(fontSize: 32),
+                      style: TextStyle(
+                        fontSize: Responsive.value(context, mobile: 24, tablet: 28, desktop: 32),
+                      ),
                     ),
                   ),
                 ),
-                const SizedBox(width: 20),
+                SizedBox(width: Responsive.value(context, mobile: 12, tablet: 16, desktop: 20)),
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -693,24 +699,32 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                         style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: AppTheme.textSecondary,
                           fontWeight: FontWeight.w600,
+                          fontSize: Responsive.fontSize(context, mobile: 14, tablet: 16, desktop: 18),
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 1,
                       ),
-                      const SizedBox(height: 4),
+                      SizedBox(height: Responsive.value(context, mobile: 2, tablet: 4, desktop: 4)),
                       Text(
                         job.title,
                         style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.bold,
                           height: 1.2,
-                          fontSize: 22,
+                          fontSize: Responsive.fontSize(context, mobile: 18, tablet: 20, desktop: 22),
                           color: AppTheme.textPrimary,
                         ),
+                        overflow: TextOverflow.ellipsis,
+                        maxLines: 2,
                       ),
                     ],
                   ),
                 ),
-                // Match percentage badge
+                // Match percentage badge - Responsive
                 Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  padding: EdgeInsets.symmetric(
+                    horizontal: Responsive.value(context, mobile: 8, tablet: 10, desktop: 12),
+                    vertical: Responsive.value(context, mobile: 6, tablet: 7, desktop: 8),
+                  ),
                   decoration: BoxDecoration(
                     gradient: LinearGradient(
                       colors: [
@@ -718,11 +732,13 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                         AppTheme.primaryColor.withOpacity(0.8),
                       ],
                     ),
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(
+                      Responsive.value(context, mobile: 10, tablet: 11, desktop: 12),
+                    ),
                     boxShadow: [
                       BoxShadow(
                         color: AppTheme.primaryColor.withOpacity(0.3),
-                        blurRadius: 8,
+                        blurRadius: Responsive.value(context, mobile: 6, tablet: 7, desktop: 8),
                         offset: const Offset(0, 2),
                       ),
                     ],
@@ -730,16 +746,16 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                   child: Row(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.star,
                         color: Colors.white,
-                        size: 16,
+                        size: Responsive.value(context, mobile: 14, tablet: 15, desktop: 16),
                       ),
-                      const SizedBox(width: 4),
+                      SizedBox(width: Responsive.value(context, mobile: 3, tablet: 4, desktop: 4)),
                       Text(
                         '95%',
-                        style: const TextStyle(
-                          fontSize: 14,
+                        style: TextStyle(
+                          fontSize: Responsive.fontSize(context, mobile: 12, tablet: 13, desktop: 14),
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
                         ),
@@ -750,14 +766,18 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
               ],
             ),
             
-            const SizedBox(height: 20),
+            SizedBox(height: Responsive.value(context, mobile: 14, tablet: 18, desktop: 20)),
             
-            // Job details - Professional layout
+            // Job details - Responsive layout
             Container(
-              padding: const EdgeInsets.all(16),
+              padding: EdgeInsets.all(
+                Responsive.value(context, mobile: 12, tablet: 14, desktop: 16),
+              ),
               decoration: BoxDecoration(
                 color: AppTheme.backgroundColor,
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(
+                  Responsive.borderRadius(context, mobile: 12, tablet: 14, desktop: 16),
+                ),
                 border: Border.all(
                   color: Colors.grey.shade200,
                   width: 1,
@@ -768,13 +788,15 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                   Row(
                     children: [
                       Expanded(child: _buildDetailItem(Icons.location_on_outlined, 'Location', job.location)),
+                      SizedBox(width: Responsive.value(context, mobile: 8, tablet: 12, desktop: 16)),
                       Expanded(child: _buildDetailItem(Icons.payments_outlined, 'Salary', job.salary)),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: Responsive.value(context, mobile: 8, tablet: 10, desktop: 12)),
                   Row(
                     children: [
                       Expanded(child: _buildDetailItem(Icons.access_time_outlined, 'Type', job.type)),
+                      SizedBox(width: Responsive.value(context, mobile: 8, tablet: 12, desktop: 16)),
                       Expanded(child: _buildDetailItem(Icons.trending_up_outlined, 'Level', job.level)),
                     ],
                   ),
@@ -782,35 +804,38 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
               ),
             ),
             
-            const SizedBox(height: 20),
+            SizedBox(height: Responsive.value(context, mobile: 14, tablet: 18, desktop: 20)),
             
-            // Skills section - Clean modern design
+            // Skills section - Responsive design
             if (job.skills.isNotEmpty) ...[
               Row(
                 children: [
                   Icon(
                     Icons.star_border,
                     color: AppTheme.primaryColor,
-                    size: 16,
+                    size: Responsive.iconSize(context, mobile: 14, tablet: 15, desktop: 16),
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: Responsive.value(context, mobile: 4, tablet: 5, desktop: 6)),
                   Text(
                     'Required Skills',
                     style: Theme.of(context).textTheme.titleMedium?.copyWith(
                       fontWeight: FontWeight.bold,
-                      fontSize: 14,
+                      fontSize: Responsive.fontSize(context, mobile: 12, tablet: 13, desktop: 14),
                       color: AppTheme.textPrimary,
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: Responsive.value(context, mobile: 6, tablet: 7, desktop: 8)),
               Wrap(
-                spacing: 6,
-                runSpacing: 6,
-                children: job.skills.take(6).map((skill) {
+                spacing: Responsive.value(context, mobile: 4, tablet: 5, desktop: 6),
+                runSpacing: Responsive.value(context, mobile: 4, tablet: 5, desktop: 6),
+                children: job.skills.take(Responsive.value(context, mobile: 5, tablet: 6, desktop: 6).toInt()).map((skill) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    padding: EdgeInsets.symmetric(
+                      horizontal: Responsive.value(context, mobile: 6, tablet: 7, desktop: 8),
+                      vertical: Responsive.value(context, mobile: 3, tablet: 4, desktop: 4),
+                    ),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         colors: [
@@ -818,7 +843,9 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                           AppTheme.primaryColor.withOpacity(0.05),
                         ],
                       ),
-                      borderRadius: BorderRadius.circular(12),
+                      borderRadius: BorderRadius.circular(
+                        Responsive.borderRadius(context, mobile: 10, tablet: 11, desktop: 12),
+                      ),
                       border: Border.all(
                         color: AppTheme.primaryColor.withOpacity(0.3),
                         width: 1,
@@ -829,44 +856,48 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                       style: TextStyle(
                         color: AppTheme.primaryColor,
                         fontWeight: FontWeight.w600,
-                        fontSize: 11,
+                        fontSize: Responsive.fontSize(context, mobile: 9, tablet: 10, desktop: 11),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 14),
+              SizedBox(height: Responsive.value(context, mobile: 10, tablet: 12, desktop: 14)),
             ],
             
-            // Description - Professional layout
+            // Description - Responsive layout
             Row(
               children: [
                 Icon(
                   Icons.description_outlined,
                   color: AppTheme.primaryColor,
-                  size: 18,
+                  size: Responsive.iconSize(context, mobile: 16, tablet: 17, desktop: 18),
                 ),
-                const SizedBox(width: 8),
+                SizedBox(width: Responsive.value(context, mobile: 6, tablet: 7, desktop: 8)),
                 Text(
                   'About this role',
                   style: Theme.of(context).textTheme.titleLarge?.copyWith(
                     fontWeight: FontWeight.bold,
-                    fontSize: 16,
+                    fontSize: Responsive.fontSize(context, mobile: 14, tablet: 15, desktop: 16),
                     color: AppTheme.textPrimary,
                   ),
                 ),
               ],
             ),
-            const SizedBox(height: 12),
+            SizedBox(height: Responsive.value(context, mobile: 8, tablet: 10, desktop: 12)),
             
-            // Expanded scrollable description area
+            // Expanded scrollable description area - Responsive
             Expanded(
               child: Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(20),
+                padding: EdgeInsets.all(
+                  Responsive.value(context, mobile: 12, tablet: 16, desktop: 20),
+                ),
                 decoration: BoxDecoration(
                   color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(
+                    Responsive.borderRadius(context, mobile: 12, tablet: 14, desktop: 16),
+                  ),
                   border: Border.all(
                     color: Colors.grey.shade200,
                     width: 1,
@@ -874,7 +905,7 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                   boxShadow: [
                     BoxShadow(
                       color: Colors.black.withOpacity(0.03),
-                      blurRadius: 8,
+                      blurRadius: Responsive.value(context, mobile: 6, tablet: 7, desktop: 8),
                       offset: const Offset(0, 2),
                     ),
                   ],
@@ -883,9 +914,9 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
                   child: Text(
                     job.description,
                     style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                      height: 1.7,
+                      height: Responsive.value(context, mobile: 1.5, tablet: 1.6, desktop: 1.7),
                       color: AppTheme.textPrimary,
-                      fontSize: 15,
+                      fontSize: Responsive.fontSize(context, mobile: 13, tablet: 14, desktop: 15),
                     ),
                   ),
                 ),
@@ -948,28 +979,34 @@ class _DiscoveryScreenState extends ConsumerState<DiscoveryScreen>
           children: [
             Icon(
               icon,
-              size: 16,
+              size: Responsive.iconSize(context, mobile: 14, tablet: 15, desktop: 16),
               color: AppTheme.primaryColor,
             ),
-            const SizedBox(width: 6),
-            Text(
-              label,
-              style: TextStyle(
-                fontSize: 12,
-                color: AppTheme.textSecondary,
-                fontWeight: FontWeight.w500,
+            SizedBox(width: Responsive.value(context, mobile: 4, tablet: 5, desktop: 6)),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: Responsive.fontSize(context, mobile: 10, tablet: 11, desktop: 12),
+                  color: AppTheme.textSecondary,
+                  fontWeight: FontWeight.w500,
+                ),
+                overflow: TextOverflow.ellipsis,
+                maxLines: 1,
               ),
             ),
           ],
         ),
-        const SizedBox(height: 4),
+        SizedBox(height: Responsive.value(context, mobile: 3, tablet: 4, desktop: 4)),
         Text(
           value,
           style: TextStyle(
-            fontSize: 14,
+            fontSize: Responsive.fontSize(context, mobile: 12, tablet: 13, desktop: 14),
             color: AppTheme.textPrimary,
             fontWeight: FontWeight.w600,
           ),
+          overflow: TextOverflow.ellipsis,
+          maxLines: 2,
         ),
       ],
     );
